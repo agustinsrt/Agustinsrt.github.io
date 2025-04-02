@@ -35,7 +35,7 @@
     
     <div style="display: flex; align-items: center; gap: 10px;">
       <label for="authNumber">Authorization :</label>
-      <input type="text" id="authNumber" placeholder="Enter Authorization Number" maxlength="13" oninput="formatAuthNumber()" style="width: 20ch;">
+      <input type="text" id="authNumber" placeholder="Enter Authorization Number" maxlength="13" oninput="formatAuthNumber()" style="width: 200px">
 
       <button onclick="openContract()">T&C</button>
     </div>
@@ -175,7 +175,7 @@
   <label for="previousClaims">Previous Claims:</label>
   <input type="number" id="previousClaims" placeholder="Enter previous claims" 
          aria-label="Enter the number of previous claims" min="0" step="0.01" 
-         value="0.00" oninput="updateRepairPercentageWithLOL()">
+         value="" oninput="updateRepairPercentageWithLOL()">
 </div>
 
 <div class="compact" style="display: flex; align-items: center; gap: 10px;">
@@ -212,7 +212,7 @@
                                 
           <!-- Final Recommendation -->
           <h3>Final Recommendation</h3>
-          <textarea id="recommendation" style="height: 60px; width: 100%" placeholder="Enter final recommendation"></textarea>
+          <textarea id="finalRecommendation" style="height: 100px; width: 100%" placeholder="Enter final recommendation"></textarea>
       
           <!-- Show Results -->
           <h3>Results</h3>
@@ -365,14 +365,14 @@ function calculateLOLPercentage() {
   // Determinar el porcentaje de LOL más bajo entre SVC y CTR
   const lowestLOLPercentage = Math.min(svcLOLPercentage, ctrLOLPercentage);
 
-  // Obtener la fecha actual en formato DD-MM-YYYY
-  const currentDate = new Date();
-  const formattedDate = `${currentDate.getDate().toString().padStart(2, '0')}-${(currentDate.getMonth() + 1).toString().padStart(2, '0')}-${currentDate.getFullYear()}`;
+  // Obtener la fecha actual en formato MM-DD-YYYY
+const currentDate = new Date();
+const formattedDate = `${(currentDate.getMonth() + 1).toString().padStart(2, '0')}-${currentDate.getDate().toString().padStart(2, '0')}-${currentDate.getFullYear()}`;
 
   // Espacio para el correo del SVC
   const svcEmail = document.getElementById('svcEmail')?.value || '____________'; // Si no se ingresa correo, dejar espacio en blanco
 
-  // Generar la recomendación final con la regla del markup
+  // Generar la recomendación final
   let finalRecommendation = "";
 
   if (svcLOLPercentage <= lolLimit && ctrLOLPercentage <= lolLimit) {
@@ -386,17 +386,22 @@ function calculateLOLPercentage() {
   } else if (ctrLOLPercentage <= lolLimit) {
     finalRecommendation = `Approve CTR repairs for $${ctrTotal.toFixed(2)}. Repairs will reach ${ctrLOLPercentage > 100 ? "exceed LOL," : `${Math.round(ctrLOLPercentage)}% LOL,`} ${espMonthsLeftText === "agreement already expired," ? "with agreement already expired," : `with ${espMonthsLeftText} months left,`} Repair is the best option.`;
   } else {
-    finalRecommendation = `Repairs will ${lowestLOLPercentage > 100 ? "exceed LOL," : `reach ${Math.round(lowestLOLPercentage)}% LOL`} ${espMonthsLeftText === "agreement already expired," ? "with agreement already expired," : `with ${espMonthsLeftText} months left,`} Best option is to evaluate alternate resolution, request comparable replacement quote to DLR.
-(Internal Claims notes only: Email sent to: ${svcEmail} on ${formattedDate})`;
+    finalRecommendation = `
+Repairs will ${lowestLOLPercentage > 100 ? "exceed LOL," : `reach ${Math.round(lowestLOLPercentage)}% LOL`} ${espMonthsLeftText === "agreement already expired," ? "with agreement already expired," : `with ${espMonthsLeftText} months left,`} Best option is to evaluate alternate resolution, request comparable replacement quote to DLR.
+(Internal Claims notes only: Email sent to: ${svcEmail} on ${formattedDate})
+***REPLACEMENT IS NOT GUARANTEED***
+`.trim();
   }
+
+  // Mostrar la recomendación en el Textarea de Final Recommendation
+  document.getElementById('finalRecommendation').value = finalRecommendation;
 
   // Mostrar resultados en pantalla
   document.getElementById('lolResults').innerHTML = `
     <strong>LOL Percentages:</strong><br>
     - SVC LOL: <span style="${svcLOLPercentage > lolLimit ? 'color: red;' : 'color: green;'}">${Math.round(svcLOLPercentage)}%</span><br>
     - CTR LOL: <span style="${ctrLOLPercentage > lolLimit ? 'color: red;' : 'color: green;'}">${Math.round(ctrLOLPercentage)}%</span><br>
-    <strong>Final Recommendation:</strong> ${finalRecommendation}
-  `;
+      `;
 }
 
 // Función para calcular los meses restantes del ESP
@@ -499,14 +504,14 @@ function calculateMonthsRemaining() {
 
   // Determina el más bajo
   const lowerPercentage = Math.min(svcPercentage, ctrPercentage);
-  let recommendation = "";
+  let finalRecommendation = "";
   let color = "";
 
   if (lowerPercentage > 60) {
-    recommendation = "REPLACEMENT RECOMMENDED";
+    finalRecommendation = "REPLACEMENT RECOMMENDED";
     color = "red";
   } else {
-    recommendation = "REPAIR RECOMMENDED";
+    finalRecommendation = "REPAIR RECOMMENDED";
     color = "green";
   }
 
@@ -514,7 +519,7 @@ function calculateMonthsRemaining() {
   document.getElementById('repairResults').innerHTML = `
     SVC: ${Math.round(svcLOLPercentage)}% LOL<br>
     CTR: ${Math.round(ctrLOLPercentage)}ctrPercentage.toFixed(2)}% LOL<br>
-    <span style="color: ${color}; font-weight: bold;">${recommendation}</span>
+    <span style="color: ${color}; font-weight: bold;">${finalRecommendation}</span>
   `;
 }
             // Función para agregar una fila en las tablas (CTR o SVC)
@@ -718,7 +723,7 @@ function generateResult() {
     const mfgCoverage = document.getElementById('noMfgCoverage').checked
         ? "NO ADDITIONAL MFG COVERAGE"
         : document.getElementById('mfgCoverage').value || "";
-    const recommendation = document.getElementById('recommendation').value || "";
+    const finalRecommendation = document.getElementById('finalRecommendation').value || "";
 
     let results = `
 AUTH: ${authNumber}
@@ -742,7 +747,7 @@ PREVIOUS CLAIMS: $${previousClaims.toFixed(2)} (${Math.round(lolPercentage)}% LO
 MFG COVERAGE:
 ${mfgCoverage}
 FINAL RECOMMENDATION:
-${recommendation}`.trim();
+${finalRecommendation}`.trim();
     const resultsBox = document.getElementById('results');
     resultsBox.style.fontFamily = 'Courier New, monospace';
     resultsBox.value = results;

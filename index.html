@@ -781,6 +781,22 @@ function copyToClipboard() {
     confirmationMessage.style.display = 'none'; // Ocultar el mensaje después de 2 segundos
   }, 2000); // 2000 ms = 2 segundos
 }
+            document.addEventListener("keydown", function(event) {
+    if (event.key === "Tab") {
+        event.preventDefault(); // Evita el comportamiento predeterminado
+
+        let inputs = document.querySelectorAll("input[type='text']");
+        let currentIndex = Array.from(inputs).indexOf(document.activeElement);
+        
+        let columns = 3; // Ajusta según el número de columnas que tienes
+
+        let nextIndex = currentIndex + columns; // Salto vertical hacia abajo
+
+        if (nextIndex < inputs.length) {
+            inputs[nextIndex].focus();
+        }
+    }
+});
 
 
           </script>

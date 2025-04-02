@@ -48,14 +48,14 @@
     </div>
 
     <div class="compact flex">
-      <label for="model">Model:</label>
-      <input type="text" id="model" placeholder="Enter Model">
+      <label for="model" >Model:</label>
+      <input type="text" id="model" placeholder="Enter Model" style="width: 200px">
       <button onclick="searchModel()">Search</button>
     </div>
 
     <div class="compact flex">
       <label for="serial">Serial:</label>
-      <input type="text" id="serial" placeholder="Enter Serial">
+      <input type="text" id="serial" placeholder="Enter Serial" style="width: 200px">
     </div>
 
     <div class="compact">
@@ -97,13 +97,8 @@
   <label style="margin-left: 10px;">
     <input type="checkbox" id="noRR" checked onchange="toggleField('rrCost', 'noRR')"> No R&R
   </label>
-</div>
-<div style="margin-bottom: 10px;">
-  <label for="TaxCost" style="min-width: 100px;">TAXES:</label>
-  <input type="number" id="TaxCost" maxlength="12" placeholder="Enter taxes" style="width: 150px" oninput="updateTotals()" min="0">
-  <label style="margin-left: 10px;">
-    <input type="checkbox" id="noTax" checked onchange="toggleField('TaxCost', 'noTax')"> No Taxes
-  </label>
+
+
 
         </div>
         <button onclick="addRow('svc')">Add SVC Part</button>
@@ -205,24 +200,16 @@
 
 <!-- Button to calculate LOL percentage -->
 <div class="compact">
-  <button onclick="calculateLOLPercentage()">Calculate LOL %</button>
+  <button onclick="calculateLOLPercentage()">Calculate LOL %</button> <button onclick="sendCompQuoteEmail()" style="margin-top: 20px;">Request Comp Quote</button> <label for="svcEmail">SVC Email:</label>
+  <input type="email" id="svcEmail" placeholder="Enter SVC email" style="width: 200px">
 </div>
-
-<label for="svcEmail">SVC Email:</label>
-<input type="email" id="svcEmail" placeholder="Enter SVC email">
 
 <!-- Results Section -->
 <div id="lolResults" style="margin-top: 20px;">
   <!-- Results for LOL Percentage and recommendations will appear here -->
 </div>
-
-<button onclick="sendCompQuoteEmail()" style="margin-top: 20px;">Request Comp Quote</button>
-
-          
-          
-             
-          
-          
+           
+                                
           <!-- Final Recommendation -->
           <h3>Final Recommendation</h3>
           <textarea id="recommendation" style="height: 60px; width: 100%" placeholder="Enter final recommendation"></textarea>
@@ -283,9 +270,7 @@
 window.onload = function () {
   toggleField('mileageCost', 'noMileage');
   toggleField('rrCost', 'noRR');
-  toggleField('TaxCost', 'noTax');
-
-
+  
   updateTotals(); // Actualizar los cálculos
 }
 
@@ -532,9 +517,8 @@ function calculateMonthsRemaining() {
   let svcLabor = parseFloat(document.getElementById('laborCost').value) || 0;
   let svcMileage = parseFloat(document.getElementById('mileageCost').value) || 0;
   let svcRR = parseFloat(document.getElementById('rrCost').value) || 0;
-  let svcTaxes = parseFloat(document.getElementById('TaxCost').value) || 0;
-
-  let svcTotal = svcLabor + svcMileage + svcRR + svcTaxes;
+ 
+  let svcTotal = svcLabor + svcMileage + svcRR;
   let svcPartsTotal = 0;
 
   // Recolectar partes en SVC y calcular el costo total

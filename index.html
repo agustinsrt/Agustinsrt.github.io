@@ -227,8 +227,34 @@
 <button onclick="copyToClipboard()">Copy to Clipboard</button>
 <span id="copyConfirmation" style="display: none; color: green; margin-left: 10px;">Copied!</span>
 
+<button id="saveToLogButton">Save to Log</button>
+<button id="downloadLogButton">Download Log</button>
           </div>
           <script>
+            function saveToLog() {
+  const resultsBox = document.getElementById('results').value; // Obtén los resultados actuales
+  addToDailyLog(resultsBox); // Añade los resultados al log global
+  console.log("Entrada guardada en el log del día");
+}
+function downloadDailyLog() {
+  const date = new Date().toISOString().split("T")[0]; // Fecha del archivo
+  const fileName = `log_${date}.txt`; // Nombre del archivo
+  const blob = new Blob([dailyLog], { type: "text/plain" }); // Crear el archivo de texto
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = fileName; // Configurar la descarga
+  a.click(); // Descargar el archivo
+}
+// Eventos para los botones
+document.getElementById('saveToLogButton').addEventListener('click', saveToLog);
+document.getElementById('downloadLogButton').addEventListener('click', downloadDailyLog);
+let dailyLog = ""; // Variable para guardar todas las entradas del día
+
+function addToDailyLog(results) {
+  const timestamp = new Date().toLocaleTimeString(); // Hora de la entrada
+  dailyLog += `=== ${timestamp} ===\n${results}\n\n`; // Formato del log
+}
+
             function updateRepairPercentageWithLOL() {
   const previousRepairs = parseFloat(document.getElementById('previousClaims').value) || 0;
   const applianceValue = parseFloat(document.getElementById('applianceValue').value) || 0;
@@ -695,6 +721,7 @@ function generateResult() {
     const recommendation = document.getElementById('recommendation').value || "";
 
     let results = `
+AUTH: ${authNumber}
 RECEIVED AN RFA FROM ${svcName}
 MODEL: ${model}
 SERIAL: ${serial}

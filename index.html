@@ -78,32 +78,33 @@
     <div class="actions">
           </div>
         <!-- SVC Section -->
-        <h3>SVC Estimate</h3>
+<h3>SVC Estimate</h3>
 
-        <div style="margin-bottom: 10px;">
-          <label for="laborCost" style="min-width: 100px;">Labor Cost:</label>
-          <input type="number" id="laborCost" placeholder="Enter labor cost" style="width: 150px" oninput="updateTotals()" min="0">
-        </div>
-        <div style="margin-bottom: 10px;">
-          <label for="mileageCost" style="min-width: 100px;">Mileage Cost:</label>
-          <input type="number" id="mileageCost" maxlength="12" placeholder="Enter mileage cost" style="width: 150px" oninput="updateTotals()" min="0">
-          <label style="margin-left: 10px;">
-            <input type="checkbox" id="noMileage" onchange="toggleField('mileageCost', 'noMileage')"> No Mileage
-          </label>
-        </div>
-        <div style="margin-bottom: 10px;">
-          <label for="rrCost" style="min-width: 100px;">R&R:</label>
-          <input type="number" id="rrCost" maxlength="12" placeholder="Enter R&R cost" style="width: 150px" oninput="updateTotals()" min="0">
-          <label style="margin-left: 10px;">
-            <input type="checkbox" id="noRR" onchange="toggleField('rrCost', 'noRR')"> No R&R
-          </label>
-        </div>
-        <div style="margin-bottom: 10px;">
-          <label for="TaxCost" style="min-width: 100px;">TAXES:</label>
-          <input type="number" id="TaxCost" maxlength="12" placeholder="Enter taxes" style="width: 150px" oninput="updateTotals()" min="0">
-          <label style="margin-left: 10px;">
-            <input type="checkbox" id="noTax" onchange="toggleField('TaxCost', 'noTax')"> No Taxes
-          </label>
+<div style="margin-bottom: 10px;">
+  <label for="laborCost" style="min-width: 100px;">Labor Cost:</label>
+  <input type="number" id="laborCost" placeholder="Enter labor cost" style="width: 150px" oninput="updateTotals()" min="0">
+</div>
+<div style="margin-bottom: 10px;">
+  <label for="mileageCost" style="min-width: 100px;">Mileage Cost:</label>
+  <input type="number" id="mileageCost" maxlength="12" placeholder="Enter mileage cost" style="width: 150px" oninput="updateTotals()" min="0">
+  <label style="margin-left: 10px;">
+    <input type="checkbox" id="noMileage" checked onchange="toggleField('mileageCost', 'noMileage')"> No Mileage
+  </label>
+</div>
+<div style="margin-bottom: 10px;">
+  <label for="rrCost" style="min-width: 100px;">R&R:</label>
+  <input type="number" id="rrCost" maxlength="12" placeholder="Enter R&R cost" style="width: 150px" oninput="updateTotals()" min="0">
+  <label style="margin-left: 10px;">
+    <input type="checkbox" id="noRR" checked onchange="toggleField('rrCost', 'noRR')"> No R&R
+  </label>
+</div>
+<div style="margin-bottom: 10px;">
+  <label for="TaxCost" style="min-width: 100px;">TAXES:</label>
+  <input type="number" id="TaxCost" maxlength="12" placeholder="Enter taxes" style="width: 150px" oninput="updateTotals()" min="0">
+  <label style="margin-left: 10px;">
+    <input type="checkbox" id="noTax" checked onchange="toggleField('TaxCost', 'noTax')"> No Taxes
+  </label>
+
         </div>
         <button onclick="addRow('svc')">Add SVC Part</button>
         <table id="svcTable">
@@ -177,7 +178,9 @@
 
 <div class="compact">
   <label for="previousClaims">Previous Claims:</label>
-  <input type="number" id="previousClaims" placeholder="Enter previous claims" aria-label="Enter the number of previous claims" min="0" oninput="updateRepairPercentageWithLOL()">
+  <input type="number" id="previousClaims" placeholder="Enter previous claims" 
+         aria-label="Enter the number of previous claims" min="0" step="0.01" 
+         value="0.00" oninput="updateRepairPercentageWithLOL()">
 </div>
 
 <div class="compact" style="display: flex; align-items: center; gap: 10px;">
@@ -205,12 +208,15 @@
   <button onclick="calculateLOLPercentage()">Calculate LOL %</button>
 </div>
 
+<label for="svcEmail">SVC Email:</label>
+<input type="email" id="svcEmail" placeholder="Enter SVC email">
+
 <!-- Results Section -->
 <div id="lolResults" style="margin-top: 20px;">
   <!-- Results for LOL Percentage and recommendations will appear here -->
 </div>
 
-<button onclick="sendCompQuoteEmail()">Request Comp Quote</button>
+<button onclick="sendCompQuoteEmail()" style="margin-top: 20px;">Request Comp Quote</button>
 
           
           
@@ -223,13 +229,17 @@
       
           <!-- Show Results -->
           <h3>Results</h3>
-          <textarea id="results" readonly style="width: 100%; overflow: hidden; resize: none; white-space: pre-wrap;"></textarea>
-<!-- Botón para copiar al portapapeles -->
-<button onclick="copyToClipboard()">Copy to Clipboard</button>
+          <textarea id="results" style="width: 100%; border: 1px solid #ccc; padding: 10px;"></textarea>
 
           
             <button onclick="showResults()">Show Results</button>
-            <button onclick="resetForm()">New Request</button>
+            <button id="newRequestButton" onclick="resetPage()">New Request</button>
+
+            <!-- Botón para copiar al portapapeles -->
+
+<button onclick="copyToClipboard()">Copy to Clipboard</button>
+<span id="copyConfirmation" style="display: none; color: green; margin-left: 10px;">Copied!</span>
+
           </div>
           <script>
             function updateRepairPercentageWithLOL() {
@@ -262,12 +272,19 @@
   if (checkbox.checked) {
     // Bloquear el textbox y limpiar su valor
     field.disabled = true;
-    field.value = "";
+    field.value = ""; // Opcional: limpiar el valor si se deshabilita
   } else {
     // Desbloquear el textbox
     field.disabled = false;
   }
-  
+}
+
+// Ejecutar la lógica al cargar la página para sincronizar estado inicial
+window.onload = function () {
+  toggleField('mileageCost', 'noMileage');
+  toggleField('rrCost', 'noRR');
+  toggleField('TaxCost', 'noTax');
+
 
   updateTotals(); // Actualizar los cálculos
 }
@@ -298,11 +315,17 @@ Could you kindly provide us with a comparable replacement quote for our mutual c
 
 We are requesting this ahead of adjudication to ensure we have all the necessary documentation to make the best claims decision.
 
+
+
 Please note that a replacement is not guaranteed at this time.
 Thank you`);
 
+// Obtener el correo del SVC
+
+const svcEmail = document.getElementById('svcEmail')?.value || ''; // Si no hay correo, dejar vacío
+
   // Generar el enlace mailto
-  const mailtoLink = `mailto:dealer@example.com?subject=${subject}&body=${body}`;
+const mailtoLink = `mailto:${svcEmail}?subject=${subject}&body=${body}`;
   
   // Abrir Outlook usando el enlace
   window.location.href = mailtoLink;
@@ -331,22 +354,29 @@ function calculateLOLPercentage() {
   // Determinar el porcentaje de LOL más bajo entre SVC y CTR
   const lowestLOLPercentage = Math.min(svcLOLPercentage, ctrLOLPercentage);
 
+  // Obtener la fecha actual en formato DD-MM-YYYY
+  const currentDate = new Date();
+  const formattedDate = `${currentDate.getDate().toString().padStart(2, '0')}-${(currentDate.getMonth() + 1).toString().padStart(2, '0')}-${currentDate.getFullYear()}`;
+
+  // Espacio para el correo del SVC
+  const svcEmail = document.getElementById('svcEmail')?.value || '____________'; // Si no se ingresa correo, dejar espacio en blanco
+
   // Generar la recomendación final con la regla del markup
   let finalRecommendation = "";
 
   if (svcLOLPercentage <= lolLimit && ctrLOLPercentage <= lolLimit) {
-    // Verificar si la diferencia entre SVC y CTR está dentro del markup permitido de $35
     if (svcTotal <= ctrTotal + 35) {
-      finalRecommendation = `Approve SVC repairs for $${svcTotal.toFixed(2)}. Repairs will reach ${Math.round(svcLOLPercentage)}% LOL with ${espMonthsLeftText} months left, Repair is the best option.`;
+      finalRecommendation = `Approve SVC repairs for $${svcTotal.toFixed(2)}. Repairs will reach ${svcLOLPercentage > 100 ? "exceed LOL," : `${Math.round(svcLOLPercentage)}% LOL,`} ${espMonthsLeftText === "agreement already expired," ? "with agreement already expired," : `with ${espMonthsLeftText} months left,`} Repair is the best option.`;
     } else {
-      finalRecommendation = `Approve CTR repairs for $${ctrTotal.toFixed(2)}. Repairs will reach ${Math.round(ctrLOLPercentage)}% LOL with ${espMonthsLeftText} months left, Repair is the best option.`;
+      finalRecommendation = `Approve CTR repairs for $${ctrTotal.toFixed(2)}. Repairs will reach ${ctrLOLPercentage > 100 ? "exceed LOL," : `${Math.round(ctrLOLPercentage)}% LOL,`} ${espMonthsLeftText === "agreement already expired," ? "with agreement already expired," : `with ${espMonthsLeftText} months left,`} Repair is the best option.`;
     }
   } else if (svcLOLPercentage <= lolLimit) {
-    finalRecommendation = `Approve SVC repairs for $${svcTotal.toFixed(2)}. Repairs will reach ${Math.round(svcLOLPercentage)}% LOL with ${espMonthsLeftText}months left, Repair is the best option.`;
+    finalRecommendation = `Approve SVC repairs for $${svcTotal.toFixed(2)}. Repairs will reach ${svcLOLPercentage > 100 ? "exceed LOL," : `${Math.round(svcLOLPercentage)}% LOL,`} ${espMonthsLeftText === "agreement already expired," ? "with agreement already expired," : `with ${espMonthsLeftText} months left,`} Repair is the best option.`;
   } else if (ctrLOLPercentage <= lolLimit) {
-    finalRecommendation = `Approve CTR repairs for $${ctrTotal.toFixed(2)}. Repairs will reach ${Math.round(ctrLOLPercentage)}% LOL with ${espMonthsLeftText}months left, Repair is the best option.`;
+    finalRecommendation = `Approve CTR repairs for $${ctrTotal.toFixed(2)}. Repairs will reach ${ctrLOLPercentage > 100 ? "exceed LOL," : `${Math.round(ctrLOLPercentage)}% LOL,`} ${espMonthsLeftText === "agreement already expired," ? "with agreement already expired," : `with ${espMonthsLeftText} months left,`} Repair is the best option.`;
   } else {
-    finalRecommendation = `Repairs will reach ${Math.round(lowestLOLPercentage)}% LOL with ${espMonthsLeftText} months left. Best option is to evaluate alternate resolution, request comparable replacement quote to DLR.`;
+    finalRecommendation = `Repairs will ${lowestLOLPercentage > 100 ? "exceed LOL," : `reach ${Math.round(lowestLOLPercentage)}% LOL`} ${espMonthsLeftText === "agreement already expired," ? "with agreement already expired," : `with ${espMonthsLeftText} months left,`} Best option is to evaluate alternate resolution, request comparable replacement quote to DLR.
+(Internal Claims notes only: Email sent to: ${svcEmail} on ${formattedDate})`;
   }
 
   // Mostrar resultados en pantalla
@@ -357,7 +387,6 @@ function calculateLOLPercentage() {
     <strong>Final Recommendation:</strong> ${finalRecommendation}
   `;
 }
-
 
 // Función para calcular los meses restantes del ESP
 function calculateESPMonthsLeft() {
@@ -610,68 +639,67 @@ function generateResult() {
     const model = document.getElementById('model').value || "";
     const serial = document.getElementById('serial').value || "";
 
-    // Actualización de Physical Damage / Abuse
     const physicalDamage = document.querySelector('input[name="physicalDamage"]:checked')?.value === "yes" 
         ? "PHYSICAL DAMAGE / ABUSE: YES" 
-        : "PHYSICAL DAMAGE / ABUSE: NO";
+        : "NO PHYSICAL DAMAGE / ABUSE";
 
     const complaint = document.getElementById('complaint').value || "";
     const techDiag = document.getElementById('techDiag').value || "";
 
-    // Recolectar costos de Mileage, Labor, R&R y Taxes
     const laborCost = parseFloat(document.getElementById('laborCost')?.value) || 0;
-    const mileageCost = document.getElementById('noMileage').checked ? 0 : parseFloat(document.getElementById('mileageCost')?.value) || 0;
-    const rrCost = document.getElementById('noRR').checked ? 0 : parseFloat(document.getElementById('rrCost')?.value) || 0;
-    const taxCost = document.getElementById('noTax').checked ? 0 : parseFloat(document.getElementById('TaxCost')?.value) || 0;
 
-   // Recolectar datos de SVC
-const svcRows = Array.from(document.querySelectorAll('#svcTable tbody tr')).map(row => {
-    const partCost = parseFloat(row.querySelector("td input[placeholder='Cost']")?.value) || 0;
-    const quantity = parseInt(row.querySelector("td input[placeholder='Qty']")?.value) || 1;
-    const partNumber = row.querySelector("td input[placeholder='Number']")?.value || "";
-    const partName = row.querySelector("td input[placeholder='Name']")?.value || "";
+    // SVC Rows
+    const svcRows = Array.from(document.querySelectorAll('#svcTable tbody tr')).map(row => {
+        const partCost = parseFloat(row.querySelector("td input[placeholder='Cost']")?.value) || 0;
+        const quantity = parseInt(row.querySelector("td input[placeholder='Qty']")?.value) || 1;
+        const partNumber = row.querySelector("td input[placeholder='Number']")?.value || "";
+        const partName = row.querySelector("td input[placeholder='Name']")?.value || "";
 
-    const totalCost = partCost * quantity;
+        const totalCost = partCost * quantity;
 
-    // Formato ajustado: con o sin desglose según la cantidad
-    return quantity > 1
-        ? `$${totalCost.toFixed(2)}      ${partNumber}    ${partName} (${quantity}pc $${partCost.toFixed(2)} e)`
-        : `$${totalCost.toFixed(2)}      ${partNumber}    ${partName}`;
-}).join("\n");
+        // Espaciado dinámico para cada columna
+        const costStr = `$${totalCost.toFixed(2)}`.padEnd(12); // Costo alineado a 12 caracteres
+        const partNumberStr = `${partNumber}`.padEnd(15); // Número de parte alineado a 15 caracteres
+        const partNameStr = `${partName}`.padEnd(20); // Nombre de parte alineado a 20 caracteres
+        const quantityStr = quantity > 1 ? `(${quantity}pc $${partCost.toFixed(2)}e)` : ""; // Cantidad formateada
 
-// Calcular el total de SVC con desglose de partes
-let svcPartsTotal = 0;
-document.querySelectorAll('#svcTable tbody tr').forEach(row => {
-    const partCost = parseFloat(row.querySelector("td input[placeholder='Cost']")?.value) || 0;
-    const quantity = parseInt(row.querySelector("td input[placeholder='Qty']")?.value) || 1;
-    svcPartsTotal += partCost * quantity;
-});
-const svcTotal = svcPartsTotal + laborCost + mileageCost + rrCost + taxCost;
+        return `${costStr}${partNumberStr}${partNameStr}${quantityStr}`;
+    }).join("\n");
 
-// Recolectar datos de CTR
-const ctrRows = Array.from(document.querySelectorAll('#ctrTable tbody tr')).map(row => {
-    const partCost = parseFloat(row.querySelector("td input[placeholder='Cost']")?.value) || 0;
-    const quantity = parseInt(row.querySelector("td input[placeholder='Qty']")?.value) || 1;
-    const partNumber = row.querySelector("td input[placeholder='Number']")?.value || "";
-    const partName = row.querySelector("td input[placeholder='Name']")?.value || "";
+    let svcPartsTotal = 0;
+    document.querySelectorAll('#svcTable tbody tr').forEach(row => {
+        const partCost = parseFloat(row.querySelector("td input[placeholder='Cost']")?.value) || 0;
+        const quantity = parseInt(row.querySelector("td input[placeholder='Qty']")?.value) || 1;
+        svcPartsTotal += partCost * quantity;
+    });
+    const svcTotal = svcPartsTotal + laborCost;
 
-    const totalCost = partCost * quantity;
+    // CTR Rows
+    const ctrRows = Array.from(document.querySelectorAll('#ctrTable tbody tr')).map(row => {
+        const partCost = parseFloat(row.querySelector("td input[placeholder='Cost']")?.value) || 0;
+        const quantity = parseInt(row.querySelector("td input[placeholder='Qty']")?.value) || 1;
+        const partNumber = row.querySelector("td input[placeholder='Number']")?.value || "";
+        const partName = row.querySelector("td input[placeholder='Name']")?.value || "";
 
-    // Formato ajustado: con o sin desglose según la cantidad
-    return quantity > 1
-        ? `$${totalCost.toFixed(2)}      ${partNumber}    ${partName} (${quantity}pc $${partCost.toFixed(2)} e)`
-        : `$${totalCost.toFixed(2)}      ${partNumber}    ${partName}`;
-}).join("\n");
-    // Calcular el total de CTR con desglose de partes
+        const totalCost = partCost * quantity;
+
+        // Espaciado dinámico para cada columna
+        const costStr = `$${totalCost.toFixed(2)}`.padEnd(12);
+        const partNumberStr = `${partNumber}`.padEnd(15);
+        const partNameStr = `${partName}`.padEnd(20);
+        const quantityStr = quantity > 1 ? `(${quantity}pc $${partCost.toFixed(2)}e)` : "";
+
+        return `${costStr}${partNumberStr}${partNameStr}${quantityStr}`;
+    }).join("\n");
+
     let ctrPartsTotal = 0;
     document.querySelectorAll('#ctrTable tbody tr').forEach(row => {
         const partCost = parseFloat(row.querySelector("td input[placeholder='Cost']")?.value) || 0;
         const quantity = parseInt(row.querySelector("td input[placeholder='Qty']")?.value) || 1;
         ctrPartsTotal += partCost * quantity;
     });
-    const ctrTotal = ctrPartsTotal + laborCost + mileageCost + rrCost;
+    const ctrTotal = ctrPartsTotal + laborCost;
 
-    // Recolectar otros datos
     const lolType = document.querySelector('input[name="lolType"]:checked')?.value || "No LOL Type selected";
     const lolValue = parseFloat(document.getElementById('applianceValue').value) || 0;
     const previousClaims = parseFloat(document.getElementById('previousClaims').value) || 0;
@@ -682,10 +710,8 @@ const ctrRows = Array.from(document.querySelectorAll('#ctrTable tbody tr')).map(
         : document.getElementById('mfgCoverage').value || "";
     const recommendation = document.getElementById('recommendation').value || "";
 
-    // Construcción del texto final
-    let results = 
-`AUTH:  ${authNumber}
-RECEIVED ESTIMATE VIA SP FROM ${svcName}
+    let results = `
+RECEIVED AN RFA FROM ${svcName}
 MODEL: ${model}
 SERIAL: ${serial}
 ${physicalDamage}
@@ -694,38 +720,22 @@ TECH'S DIAG: ${techDiag}
 SVC ESTIMATE:
 $${laborCost.toFixed(2)}\tLABOR
 ${svcRows}
-`;
-
-    if (!document.getElementById('noMileage').checked) {
-        results += `$${mileageCost.toFixed(2)}\tMILEAGE\n`;
-    }
-    if (!document.getElementById('noRR').checked) {
-        results += `$${rrCost.toFixed(2)}\tR&R\n`;
-    }
-    if (!document.getElementById('noTax').checked) {
-        results += `$${taxCost.toFixed(2)}\tTAXES\n`;
-    }
-
-    // Desglose de SVC TOTAL con partes
-    results += `$${svcTotal.toFixed(2)}\tSVC TOTAL ($${svcPartsTotal.toFixed(2)} parts)\n`;
-
-    // Desglose de CTR TOTAL con partes
-    results += `CTR ESTIMATE:
+$${svcTotal.toFixed(2)}\tTOTAL SVC ($${svcPartsTotal.toFixed(2)} PARTS)
+CTR ESTIMATE:
 ${ctrRows}
-$${ctrTotal.toFixed(2)}\tCTR TOTAL ($${ctrPartsTotal.toFixed(2)} parts)\n`;
-
-    results += `LOL TYPE: ${lolType}
+$${ctrTotal.toFixed(2)}\tTOTAL CTR ($${ctrPartsTotal.toFixed(2)} PARTS)
+LOL DETAILS:
+LOL TYPE: ${lolType}
 LOL VALUE: $${lolValue.toFixed(2)}
-PREVIOUS PAID CLAIMS: $${previousClaims.toFixed(2)} (${Math.round(lolPercentage)}% LOL)
-MFG COVERAGE: ${mfgCoverage}
-FINAL RECOMMENDATION: ${recommendation}
-`.trim();
-
-    // Mostrar los resultados en el área de texto
+PREVIOUS CLAIMS: $${previousClaims.toFixed(2)} (${Math.round(lolPercentage)}% LOL)
+MFG COVERAGE:
+${mfgCoverage}
+FINAL RECOMMENDATION:
+${recommendation}`.trim();
     const resultsBox = document.getElementById('results');
+    resultsBox.style.fontFamily = 'Courier New, monospace';
     resultsBox.value = results;
 
-    // Ajustar automáticamente la altura del área de texto al contenido
     autoResizeTextarea();
 }
 
@@ -733,58 +743,29 @@ function autoResizeTextarea() {
     const resultsBox = document.getElementById('results');
     resultsBox.style.height = 'auto'; // Restablece la altura
     resultsBox.style.height = `${resultsBox.scrollHeight}px`; // Ajusta al contenido
-}  
-            // Función para reiniciar todos los campos
-            function resetForm() {
-  // Limpiar todos los campos de texto y áreas de texto
-  document.querySelectorAll('input, textarea').forEach(input => input.value = '');
-
-  // Limpiar todas las opciones seleccionadas (radio y checkbox)
-  document.querySelectorAll('input[type="radio"], input[type="checkbox"]').forEach(input => input.checked = false);
-
-  // Limpiar las tablas (contenidos del tbody)
-  document.querySelectorAll('tbody').forEach(tbody => tbody.innerHTML = '');
-
-  // Reiniciar subtotales y otros elementos dinámicos
-  document.getElementById('svcSubtotal').textContent = '$0.00   SVC TOTAL'; 
-  document.getElementById('ctrSubtotal').textContent = '$0.00   CTR TOTAL';
-
-  // Limpiar el área de resultados
-  document.getElementById('results').value = '';
-
-  // Reiniciar cualquier otro campo dinámico agregado
-  if (document.getElementById('lolResults')) {
-    document.getElementById('lolResults').innerHTML = ''; // Limpiar resultados de LOL
-  }
-
-  // Opcional: Reiniciar campos de fechas
-  if (document.getElementById('expirationDate')) {
-    document.getElementById('expirationDate').value = ''; // Limpiar campo de fecha
-  }
-
-  // Actualizar los totales y cualquier otro cálculo relacionado
-  updateTotals();
-
-  // Desbloquear campos bloqueados
-  const mileageBox = document.getElementById('mileageCost');
-  const rrBox = document.getElementById('rrCost');
-  const taxBox = document.getElementById('TaxCost');
-
-  if (mileageBox) mileageBox.disabled = false;
-  if (rrBox) rrBox.disabled = false;
-  if (taxBox) taxBox.disabled = false;
-
-  // *** Nueva funcionalidad: regresar al inicio de la página ***
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+    resultsBox.scrollIntoView({ behavior: 'smooth' });
 }
+
+function resetPage() {
+  // Recargar la página
+  window.location.reload();
+
+  // Opcional: Scroll hacia el inicio (la recarga ya lo hará en la mayoría de navegadores modernos)
+  window.scrollTo(0, 0);
+}
+            
 function copyToClipboard() {
   const resultsBox = document.getElementById('results');
   resultsBox.select(); // Seleccionar todo el texto del área de texto
   resultsBox.setSelectionRange(0, 99999); // Para dispositivos móviles
   document.execCommand('copy'); // Copiar el texto al portapapeles
 
-  // Confirmación visual (opcional)
-  alert("Copied to clipboard!");
+ // Mostrar confirmación visual no intrusiva
+ const confirmationMessage = document.getElementById('copyConfirmation');
+  confirmationMessage.style.display = 'inline'; // Mostrar el mensaje
+  setTimeout(() => {
+    confirmationMessage.style.display = 'none'; // Ocultar el mensaje después de 2 segundos
+  }, 2000); // 2000 ms = 2 segundos
 }
 
 

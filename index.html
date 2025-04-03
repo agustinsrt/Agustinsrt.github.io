@@ -691,8 +691,15 @@ function generateResult() {
     const techDiag = document.getElementById('techDiag').value || "";
 
     const laborCost = parseFloat(document.getElementById('laborCost')?.value) || 0;
-    const rrCost = parseFloat(document.getElementById('rrCost')?.value) || 0; // Obtener RR
-    const mileageCost = parseFloat(document.getElementById('mileageCost')?.value) || 0; // Obtener Mileage
+    const rrCostElement = document.getElementById('rrCost'); // Verificar existencia
+    const mileageCostElement = document.getElementById('mileageCost'); // Verificar existencia
+
+    const rrCost = rrCostElement && rrCostElement.value !== "" 
+        ? parseFloat(rrCostElement.value) 
+        : 0; // Asegurarse de que RR tenga un valor válido o sea 0
+    const mileageCost = mileageCostElement && mileageCostElement.value !== "" 
+        ? parseFloat(mileageCostElement.value) 
+        : 0; // Asegurarse de que Mileage tenga un valor válido o sea 0
 
     // **SVC Rows**
     const svcRows = Array.from(document.querySelectorAll('#svcTable tbody tr')).map(row => {
@@ -769,8 +776,8 @@ function generateResult() {
 
     // Formatear resultados
     const laborFormatted = `$${laborCost.toFixed(2)}`.padEnd(12);
-    const rrFormatted = `$${rrCost.toFixed(2)}`.padEnd(12); // RR Formateado
-    const mileageFormatted = `$${mileageCost.toFixed(2)}`.padEnd(12); // Mileage Formateado
+    const rrFormatted = rrCost > 0 ? `$${rrCost.toFixed(2)}`.padEnd(12) + "RR\n" : ""; // Mostrar RR solo si es mayor a 0
+    const mileageFormatted = mileageCost > 0 ? `$${mileageCost.toFixed(2)}`.padEnd(12) + "MILEAGE\n" : ""; // Mostrar Mileage solo si es mayor a 0
     const svcTotalFormatted = `$${svcTotal.toFixed(2)}`.padEnd(12);
     const ctrTotalFormatted = `$${ctrTotal.toFixed(2)}`.padEnd(12);
     const remainingLOLFormatted = remainingLOL !== null 
@@ -787,15 +794,11 @@ COMPLAINT: ${complaint}
 TECH'S DIAG: ${techDiag}
 SVC ESTIMATE:
 ${laborFormatted}LABOR
-${rrFormatted}RR
-${mileageFormatted}MILEAGE
-${svcRows}
+${rrFormatted}${mileageFormatted}${svcRows}
 ${svcTotalFormatted}TOTAL SVC ($${svcPartsTotal.toFixed(2)} PARTS)
 CTR ESTIMATE:
 ${laborFormatted}LABOR
-${rrFormatted}RR
-${mileageFormatted}MILEAGE
-${ctrRows}
+${rrFormatted}${mileageFormatted}${ctrRows}
 ${ctrTotalFormatted}TOTAL CTR ($${ctrPartsTotal.toFixed(2)} PARTS)
 LOL: ${lolType}
 LOL VALUE: $${lolValue.toFixed(2)}
@@ -811,6 +814,7 @@ ${finalRecommendation}`.trim();
 
     autoResizeTextarea();
 }
+
 
 
 function autoResizeTextarea() {

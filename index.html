@@ -720,7 +720,7 @@ function generateResult() {
         const quantity = parseInt(row.querySelector("td input[placeholder='Qty']")?.value) || 1;
         svcPartsTotal += partCost * quantity;
     });
-    const svcTotal = svcPartsTotal + laborCost;
+    const svcTotal = svcPartsTotal + laborCost + ctrMileage + ctrRR;
 
     // CTR Rows
     const ctrRows = Array.from(document.querySelectorAll('#ctrTable tbody tr')).map(row => {
@@ -750,7 +750,7 @@ function generateResult() {
         const quantity = parseInt(row.querySelector("td input[placeholder='Qty']")?.value) || 1;
         ctrPartsTotal += partCost * quantity;
     });
-    const ctrTotal = ctrPartsTotal + laborCost;
+    const ctrTotal = ctrPartsTotal + laborCost + ctrMileage + ctrRR;
 
     const lolType = document.querySelector('input[name="lolType"]:checked')?.value || "No LOL Type selected";
     const lolValue = parseFloat(document.getElementById('applianceValue').value) || 0;

@@ -228,32 +228,52 @@
 <span id="copyConfirmation" style="display: none; color: green; margin-left: 10px;">Copied!</span>
 
 <button id="saveToLogButton">Save to Log</button>
+<span id="saveConfirmation" style="display: none; color: green; margin-left: 10px;">Saved!</span>
 <button id="downloadLogButton">Download Log</button>
-          </div>
-          <script>
-            function saveToLog() {
-  const resultsBox = document.getElementById('results').value; // Obtén los resultados actuales
-  addToDailyLog(resultsBox); // Añade los resultados al log global
-  console.log("Entrada guardada en el log del día");
-}
-function downloadDailyLog() {
-  const date = new Date().toISOString().split("T")[0]; // Fecha del archivo
-  const fileName = `log_${date}.txt`; // Nombre del archivo
-  const blob = new Blob([dailyLog], { type: "text/plain" }); // Crear el archivo de texto
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = fileName; // Configurar la descarga
-  a.click(); // Descargar el archivo
-}
-// Eventos para los botones
-document.getElementById('saveToLogButton').addEventListener('click', saveToLog);
-document.getElementById('downloadLogButton').addEventListener('click', downloadDailyLog);
-let dailyLog = ""; // Variable para guardar todas las entradas del día
+</div>
+<script>
+  // Cargar el log desde LocalStorage al iniciar la página
+  let dailyLog = localStorage.getItem('dailyLog') || ""; // Recuperar el log acumulado
 
-function addToDailyLog(results) {
-  const timestamp = new Date().toLocaleTimeString(); // Hora de la entrada
-  dailyLog += `=== ${timestamp} ===\n${results}\n\n`; // Formato del log
+  // Función para guardar en el log
+  function saveToLog() {
+    const resultsBox = document.getElementById('results').value; // Obtén los resultados actuales
+    addToDailyLog(resultsBox); // Añade los resultados al log global
+    console.log("Entrada guardada en el log del día");
+
+    // Mostrar confirmación visual no intrusiva
+ const confirmationMessage = document.getElementById('saveConfirmation');
+  confirmationMessage.style.display = 'inline'; // Mostrar el mensaje
+  setTimeout(() => {
+    confirmationMessage.style.display = 'none'; // Ocultar el mensaje después de 2 segundos
+  }, 2000); // 2000 ms = 2 segundos
 }
+ 
+
+
+  // Función para añadir entrada al log diario
+  function addToDailyLog(results) {
+    const timestamp = new Date().toLocaleTimeString(); // Hora de la entrada
+    dailyLog += `=== ${timestamp} ===\n${results}\n\n`; // Formato del log
+    localStorage.setItem('dailyLog', dailyLog); // Guardar el log acumulado en LocalStorage
+  }
+
+  // Función para descargar el archivo del log diario
+  function downloadDailyLog() {
+    const date = new Date().toISOString().split("T")[0]; // Fecha del archivo
+    const fileName = `log_${date}.txt`; // Nombre del archivo
+    const blob = new Blob([dailyLog], { type: "text/plain" }); // Crear el archivo de texto
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = fileName; // Configurar la descarga
+    a.click(); // Descargar el archivo
+    console.log("Archivo descargado: " + fileName);
+  }
+
+  // Eventos para los botones
+  document.getElementById('saveToLogButton').addEventListener('click', saveToLog);
+  document.getElementById('downloadLogButton').addEventListener('click', downloadDailyLog);
+
 
             function updateRepairPercentageWithLOL() {
   const previousRepairs = parseFloat(document.getElementById('previousClaims').value) || 0;
@@ -354,9 +374,16 @@ function calculateLOLPercentage() {
   const svcTotal = parseFloat(document.getElementById('svcSubtotal').textContent.replace(/[^0-9.]/g, '')) || 0;
   const ctrTotal = parseFloat(document.getElementById('ctrSubtotal').textContent.replace(/[^0-9.]/g, '')) || 0;
 
+  // Determinar el tipo de LOL (FV o FV-C)
+  const lolType = document.querySelector('input[name="lolType"]:checked')?.value || "FV";
+
+  // Calcular Remaining LOL si FV-C está seleccionado
+  const remainingLOL = lolType === "FV-C" ? applianceValue - previousClaims : null;
+
   // Calcular porcentajes de LOL para SVC y CTR
-  const svcLOLPercentage = applianceValue > 0 ? ((previousClaims + svcTotal) / applianceValue) * 100 : 0;
-  const ctrLOLPercentage = applianceValue > 0 ? ((previousClaims + ctrTotal) / applianceValue) * 100 : 0;
+  const maxLOL = remainingLOL !== null ? remainingLOL : applianceValue; // Usar Remaining LOL si está disponible
+  const svcLOLPercentage = maxLOL > 0 ? ((previousClaims + svcTotal) / maxLOL) * 100 : 0;
+  const ctrLOLPercentage = maxLOL > 0 ? ((previousClaims + ctrTotal) / maxLOL) * 100 : 0;
 
   // Determinar los límites de riesgo según meses restantes en el ESP
   const espMonthsLeft = typeof espMonthsLeftText === "number" ? espMonthsLeftText : -1; // Valor numérico o expirado
@@ -366,8 +393,8 @@ function calculateLOLPercentage() {
   const lowestLOLPercentage = Math.min(svcLOLPercentage, ctrLOLPercentage);
 
   // Obtener la fecha actual en formato MM-DD-YYYY
-const currentDate = new Date();
-const formattedDate = `${(currentDate.getMonth() + 1).toString().padStart(2, '0')}-${currentDate.getDate().toString().padStart(2, '0')}-${currentDate.getFullYear()}`;
+  const currentDate = new Date();
+  const formattedDate = `${(currentDate.getMonth() + 1).toString().padStart(2, '0')}-${currentDate.getDate().toString().padStart(2, '0')}-${currentDate.getFullYear()}`;
 
   // Espacio para el correo del SVC
   const svcEmail = document.getElementById('svcEmail')?.value || '____________'; // Si no se ingresa correo, dejar espacio en blanco
@@ -401,8 +428,10 @@ Repairs will ${lowestLOLPercentage > 100 ? "exceed LOL," : `reach ${Math.round(l
     <strong>LOL Percentages:</strong><br>
     - SVC LOL: <span style="${svcLOLPercentage > lolLimit ? 'color: red;' : 'color: green;'}">${Math.round(svcLOLPercentage)}%</span><br>
     - CTR LOL: <span style="${ctrLOLPercentage > lolLimit ? 'color: red;' : 'color: green;'}">${Math.round(ctrLOLPercentage)}%</span><br>
-      `;
+    ${lolType === "FV-C" ? `- REMAINING LOL: <Span>$${remainingLOL.toFixed(2)}</span><br>` : ""}
+  `;
 }
+
 
 // Función para calcular los meses restantes del ESP
 function calculateESPMonthsLeft() {
@@ -672,15 +701,19 @@ function generateResult() {
 
         const totalCost = partCost * quantity;
 
-        // Espaciado dinámico para cada columna
-        const costStr = `$${totalCost.toFixed(2)}`.padEnd(12); // Costo alineado a 12 caracteres
-        const partNumberStr = `${partNumber}`.padEnd(15); // Número de parte alineado a 15 caracteres
-        const partNameStr = `${partName}`.padEnd(20); // Nombre de parte alineado a 20 caracteres
-        const quantityStr = quantity > 1 ? `(${quantity}pc $${partCost.toFixed(2)}e)` : ""; // Cantidad formateada
+        // Concatenar cantidad al nombre de la parte
+        const quantityStr = quantity > 1 ? ` (${quantity}pc $${partCost.toFixed(2)}e)` : "";
+        const partNameWithQuantity = `${partName}${quantityStr}`;
 
-        return `${costStr}${partNumberStr}${partNameStr}${quantityStr}`;
+        // Espaciado dinámico para cada columna
+        const costStr = `$${totalCost.toFixed(2)}`.padEnd(12);
+        const partNumberStr = `${partNumber}`.padEnd(15);
+        const partNameStr = partNameWithQuantity.padEnd(30);
+
+        return `${costStr}${partNumberStr}${partNameStr}`;
     }).join("\n");
 
+    // Calcular SVC Total
     let svcPartsTotal = 0;
     document.querySelectorAll('#svcTable tbody tr').forEach(row => {
         const partCost = parseFloat(row.querySelector("td input[placeholder='Cost']")?.value) || 0;
@@ -698,15 +731,19 @@ function generateResult() {
 
         const totalCost = partCost * quantity;
 
+        // Concatenar cantidad al nombre de la parte
+        const quantityStr = quantity > 1 ? ` (${quantity}pc $${partCost.toFixed(2)}e)` : "";
+        const partNameWithQuantity = `${partName}${quantityStr}`;
+
         // Espaciado dinámico para cada columna
         const costStr = `$${totalCost.toFixed(2)}`.padEnd(12);
         const partNumberStr = `${partNumber}`.padEnd(15);
-        const partNameStr = `${partName}`.padEnd(20);
-        const quantityStr = quantity > 1 ? `(${quantity}pc $${partCost.toFixed(2)}e)` : "";
+        const partNameStr = partNameWithQuantity.padEnd(30);
 
-        return `${costStr}${partNumberStr}${partNameStr}${quantityStr}`;
+        return `${costStr}${partNumberStr}${partNameStr}`;
     }).join("\n");
 
+    // Calcular CTR Total
     let ctrPartsTotal = 0;
     document.querySelectorAll('#ctrTable tbody tr').forEach(row => {
         const partCost = parseFloat(row.querySelector("td input[placeholder='Cost']")?.value) || 0;
@@ -720,10 +757,24 @@ function generateResult() {
     const previousClaims = parseFloat(document.getElementById('previousClaims').value) || 0;
     const lolPercentage = lolValue > 0 ? (previousClaims / lolValue) * 100 : 0;
 
+    // Calcular Remaining LOL solo si FV-C está seleccionado
+    let remainingLOL = null;
+    if (lolType === "FV-C") {
+        remainingLOL = lolValue - previousClaims; // Valor restante acumulativo
+    }
+
     const mfgCoverage = document.getElementById('noMfgCoverage').checked
         ? "NO ADDITIONAL MFG COVERAGE"
         : document.getElementById('mfgCoverage').value || "";
     const finalRecommendation = document.getElementById('finalRecommendation').value || "";
+
+    // Formatear y alinear resultados
+    const laborFormatted = `$${laborCost.toFixed(2)}`.padEnd(12);
+    const svcTotalFormatted = `$${svcTotal.toFixed(2)}`.padEnd(12);
+    const ctrTotalFormatted = `$${ctrTotal.toFixed(2)}`.padEnd(12);
+    const remainingLOLFormatted = remainingLOL !== null 
+        ? `REMAINING LOL: $${remainingLOL.toFixed(2)}\n` 
+        : "";
 
     let results = `
 AUTH: ${authNumber}
@@ -734,18 +785,19 @@ ${physicalDamage}
 COMPLAINT: ${complaint}
 TECH'S DIAG: ${techDiag}
 SVC ESTIMATE:
-$${laborCost.toFixed(2)}\tLABOR
+${laborFormatted}LABOR
 ${svcRows}
-$${svcTotal.toFixed(2)}\tTOTAL SVC ($${svcPartsTotal.toFixed(2)} PARTS)
+${svcTotalFormatted}TOTAL SVC ($${svcPartsTotal.toFixed(2)} PARTS)
 CTR ESTIMATE:
 ${ctrRows}
-$${ctrTotal.toFixed(2)}\tTOTAL CTR ($${ctrPartsTotal.toFixed(2)} PARTS)
-LOL TYPE: ${lolType}
+${ctrTotalFormatted}TOTAL CTR ($${ctrPartsTotal.toFixed(2)} PARTS)
+LOL: ${lolType}
 LOL VALUE: $${lolValue.toFixed(2)}
-PREVIOUS CLAIMS: $${previousClaims.toFixed(2)} (${Math.round(lolPercentage)}% LOL)
+PREVIOUS CLAIMS: $${previousClaims.toFixed(2)}${remainingLOLFormatted ? `\n${remainingLOLFormatted}` : ""}
 MFG COVERAGE:
 ${mfgCoverage}
 FINAL RECOMMENDATION: ${finalRecommendation}`.trim();
+
     const resultsBox = document.getElementById('results');
     resultsBox.style.fontFamily = 'Courier New, monospace';
     resultsBox.value = results;
@@ -781,7 +833,70 @@ function copyToClipboard() {
     confirmationMessage.style.display = 'none'; // Ocultar el mensaje después de 2 segundos
   }, 2000); // 2000 ms = 2 segundos
 }
-           
+
+document.addEventListener("DOMContentLoaded", () => {
+  configureColumnTabbing("#svcTable");
+  configureColumnTabbing("#ctrTable");
+});
+
+function configureColumnTabbing(tableSelector) {
+  const table = document.querySelector(tableSelector);
+
+  // Delegación de eventos para capturar la tecla Tab
+  table.addEventListener("keydown", (event) => {
+    if (event.key === "Tab") {
+      event.preventDefault(); // Evitar comportamiento predeterminado
+
+      // Agrupar inputs por columna
+      const columns = [];
+      const rows = Array.from(table.querySelectorAll("tbody tr"));
+      rows.forEach(row => {
+        Array.from(row.children).forEach((cell, columnIndex) => {
+          columns[columnIndex] = columns[columnIndex] || [];
+          const input = cell.querySelector("input");
+          if (input) columns[columnIndex].push(input);
+        });
+      });
+
+      // Crear una lista ordenada por columna y luego por filas dentro de cada columna
+      const orderedInputs = columns.flat(); // Los elementos están en orden columna por columna
+
+      // Identificar el índice actual en la lista ordenada
+      const currentInput = event.target;
+      const currentIndex = orderedInputs.indexOf(currentInput);
+
+      // Determinar el próximo elemento según Shift
+      const nextIndex = event.shiftKey ? currentIndex - 1 : currentIndex + 1;
+      if (orderedInputs[nextIndex]) {
+        orderedInputs[nextIndex].focus();
+      }
+    }
+  });
+}
+document.addEventListener("DOMContentLoaded", () => {
+  // Desactivar flechas para todos los inputs actuales en Cost
+  document.querySelectorAll("input[placeholder='Cost']").forEach(disableArrowKeys);
+
+  // Desactivar flechas para nuevos inputs dinámicos al agregar filas
+  const addButtons = ["svc", "ctr"];
+  addButtons.forEach((tableId) => {
+    document.querySelector(`button[onclick="addRow('${tableId}')"]`).addEventListener("click", () => {
+      setTimeout(() => {
+        const newCostInputs = document.querySelectorAll(`#${tableId}Table tbody input[placeholder='Cost']`);
+        newCostInputs.forEach(disableArrowKeys); // Aplicar lógica a nuevos inputs
+      }, 50); // Breve retraso para asegurar que la fila ya se haya agregado
+    });
+  });
+});
+
+function disableArrowKeys(input) {
+  input.addEventListener("keydown", (event) => {
+    if (event.key === "ArrowUp" || event.key === "ArrowDown") {
+      event.preventDefault(); // Bloquear el incremento/decremento
+    }
+  });
+}
+
           </script>
     </body>
     </html>                                

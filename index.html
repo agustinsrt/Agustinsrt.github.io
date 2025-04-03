@@ -403,13 +403,13 @@ function calculateLOLPercentage() {
   let finalRecommendation = "";
 
   if (svcLOLPercentage <= lolLimit && ctrLOLPercentage <= lolLimit) {
-    if (svcTotal <= ctrTotal + 35) {
-      finalRecommendation = `Approve SVC repairs for $${svcTotal.toFixed(2)}. Repairs will reach ${svcLOLPercentage > 100 ? "exceed LOL," : `${Math.round(svcLOLPercentage)}% LOL,`} ${espMonthsLeftText === "agreement already expired," ? "with agreement already expired," : `with ${espMonthsLeftText} months left,`} Repair is the best option.`;
+    if ( <= ctrTotal + 35) {
+      finalRecommendation = `Approve SVC repairs for $${.toFixed(2)}. Repairs will reach ${svcLOLPercentage > 100 ? "exceed LOL," : `${Math.round(svcLOLPercentage)}% LOL,`} ${espMonthsLeftText === "agreement already expired," ? "with agreement already expired," : `with ${espMonthsLeftText} months left,`} Repair is the best option.`;
     } else {
       finalRecommendation = `Approve CTR repairs for $${ctrTotal.toFixed(2)}. Repairs will reach ${ctrLOLPercentage > 100 ? "exceed LOL," : `${Math.round(ctrLOLPercentage)}% LOL,`} ${espMonthsLeftText === "agreement already expired," ? "with agreement already expired," : `with ${espMonthsLeftText} months left,`} Repair is the best option.`;
     }
   } else if (svcLOLPercentage <= lolLimit) {
-    finalRecommendation = `Approve SVC repairs for $${svcTotal.toFixed(2)}. Repairs will reach ${svcLOLPercentage > 100 ? "exceed LOL," : `${Math.round(svcLOLPercentage)}% LOL,`} ${espMonthsLeftText === "agreement already expired," ? "with agreement already expired," : `with ${espMonthsLeftText} months left,`} Repair is the best option.`;
+    finalRecommendation = `Approve SVC repairs for $${.toFixed(2)}. Repairs will reach ${svcLOLPercentage > 100 ? "exceed LOL," : `${Math.round(svcLOLPercentage)}% LOL,`} ${espMonthsLeftText === "agreement already expired," ? "with agreement already expired," : `with ${espMonthsLeftText} months left,`} Repair is the best option.`;
   } else if (ctrLOLPercentage <= lolLimit) {
     finalRecommendation = `Approve CTR repairs for $${ctrTotal.toFixed(2)}. Repairs will reach ${ctrLOLPercentage > 100 ? "exceed LOL," : `${Math.round(ctrLOLPercentage)}% LOL,`} ${espMonthsLeftText === "agreement already expired," ? "with agreement already expired," : `with ${espMonthsLeftText} months left,`} Repair is the best option.`;
   } else {
@@ -516,7 +516,7 @@ function calculateMonthsRemaining() {
 }
 
             function calculateRepairPercentage() {
-  const svcTotal = Array.from(document.querySelectorAll('#svcTable tbody tr input[type="number"]'))
+  const  = Array.from(document.querySelectorAll('#svcTable tbody tr input[type="number"]'))
     .reduce((sum, input) => sum + (parseFloat(input.value) || 0), 0);
   const ctrTotal = Array.from(document.querySelectorAll('#ctrTable tbody tr input[type="number"]'))
     .reduce((sum, input) => sum + (parseFloat(input.value) || 0), 0);
@@ -528,7 +528,7 @@ function calculateMonthsRemaining() {
     return;
   }
 
-  const svcPercentage = ((svcTotal + previousClaims) / lolValue) * 100;
+  const svcPercentage = (( + previousClaims) / lolValue) * 100;
   const ctrPercentage = ((ctrTotal + previousClaims) / lolValue) * 100;
 
   // Determina el más bajo
@@ -626,7 +626,7 @@ function calculateMonthsRemaining() {
     totalCostField.value = totalPartCost.toFixed(2);
   });
 
-  const ctrTotal = ctrPartsTotal + ctrLabor + ctrMileage + ctrRR;
+  const ctrTotal = ctrPartsTotal + ctrLabor + mileageCost + rrCost;
 
   // Actualizar el subtotal de CTR en el DOM
   const ctrSubtotal = document.getElementById("ctrSubtotal");
@@ -750,7 +750,7 @@ function generateResult() {
         const quantity = parseInt(row.querySelector("td input[placeholder='Qty']")?.value) || 1;
         ctrPartsTotal += partCost * quantity;
     });
-    const ctrTotal = ctrPartsTotal + laborCost + ctrMileage + ctrRR;
+    const ctrTotal = ctrPartsTotal + laborCost + mileageCost + rrCost;
 
     const lolType = document.querySelector('input[name="lolType"]:checked')?.value || "No LOL Type selected";
     const lolValue = parseFloat(document.getElementById('applianceValue').value) || 0;

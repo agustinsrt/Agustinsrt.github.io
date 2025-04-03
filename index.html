@@ -691,8 +691,10 @@ function generateResult() {
     const techDiag = document.getElementById('techDiag').value || "";
 
     const laborCost = parseFloat(document.getElementById('laborCost')?.value) || 0;
+    const rrCost = parseFloat(document.getElementById('rrCost')?.value) || 0; // Obtener RR
+    const mileageCost = parseFloat(document.getElementById('mileageCost')?.value) || 0; // Obtener Mileage
 
-    // SVC Rows
+    // **SVC Rows**
     const svcRows = Array.from(document.querySelectorAll('#svcTable tbody tr')).map(row => {
         const partCost = parseFloat(row.querySelector("td input[placeholder='Cost']")?.value) || 0;
         const quantity = parseInt(row.querySelector("td input[placeholder='Qty']")?.value) || 1;
@@ -713,16 +715,16 @@ function generateResult() {
         return `${costStr}${partNumberStr}${partNameStr}`;
     }).join("\n");
 
-    // Calcular SVC Total
+    // Calcular **SVC Total**
     let svcPartsTotal = 0;
     document.querySelectorAll('#svcTable tbody tr').forEach(row => {
         const partCost = parseFloat(row.querySelector("td input[placeholder='Cost']")?.value) || 0;
         const quantity = parseInt(row.querySelector("td input[placeholder='Qty']")?.value) || 1;
         svcPartsTotal += partCost * quantity;
     });
-    const svcTotal = svcPartsTotal + laborCost + ctrMileage + ctrRR;
+    const svcTotal = svcPartsTotal + laborCost + rrCost + mileageCost; // Agregar RR y Mileage
 
-    // CTR Rows
+    // **CTR Rows**
     const ctrRows = Array.from(document.querySelectorAll('#ctrTable tbody tr')).map(row => {
         const partCost = parseFloat(row.querySelector("td input[placeholder='Cost']")?.value) || 0;
         const quantity = parseInt(row.querySelector("td input[placeholder='Qty']")?.value) || 1;
@@ -743,37 +745,36 @@ function generateResult() {
         return `${costStr}${partNumberStr}${partNameStr}`;
     }).join("\n");
 
-    // Calcular CTR Total
+    // Calcular **CTR Total**
     let ctrPartsTotal = 0;
     document.querySelectorAll('#ctrTable tbody tr').forEach(row => {
         const partCost = parseFloat(row.querySelector("td input[placeholder='Cost']")?.value) || 0;
         const quantity = parseInt(row.querySelector("td input[placeholder='Qty']")?.value) || 1;
         ctrPartsTotal += partCost * quantity;
     });
-    const ctrTotal = ctrPartsTotal + laborCost + ctrMileage + ctrRR;
+    const ctrTotal = ctrPartsTotal + laborCost + rrCost + mileageCost; // Agregar RR y Mileage
 
+    // Calcular Remaining LOL (si aplica FV-C)
     const lolType = document.querySelector('input[name="lolType"]:checked')?.value || "No LOL Type selected";
     const lolValue = parseFloat(document.getElementById('applianceValue').value) || 0;
     const previousClaims = parseFloat(document.getElementById('previousClaims').value) || 0;
-    const lolPercentage = lolValue > 0 ? (previousClaims / lolValue) * 100 : 0;
+    const remainingLOL = lolType === "FV-C" ? (lolValue - previousClaims) : null;
 
-    // Calcular Remaining LOL solo si FV-C está seleccionado
-    let remainingLOL = null;
-    if (lolType === "FV-C") {
-        remainingLOL = lolValue - previousClaims; // Valor restante acumulativo
-    }
-
+    // Obtener valores de MFG Coverage y Final Recommendation
     const mfgCoverage = document.getElementById('noMfgCoverage').checked
         ? "NO ADDITIONAL MFG COVERAGE"
         : document.getElementById('mfgCoverage').value || "";
+
     const finalRecommendation = document.getElementById('finalRecommendation').value || "";
 
-    // Formatear y alinear resultados
+    // Formatear resultados
     const laborFormatted = `$${laborCost.toFixed(2)}`.padEnd(12);
+    const rrFormatted = `$${rrCost.toFixed(2)}`.padEnd(12); // RR Formateado
+    const mileageFormatted = `$${mileageCost.toFixed(2)}`.padEnd(12); // Mileage Formateado
     const svcTotalFormatted = `$${svcTotal.toFixed(2)}`.padEnd(12);
     const ctrTotalFormatted = `$${ctrTotal.toFixed(2)}`.padEnd(12);
     const remainingLOLFormatted = remainingLOL !== null 
-        ? `REMAINING LOL: $${remainingLOL.toFixed(2)}\n` 
+        ? `Remaining LOL: $${remainingLOL.toFixed(2)}\n` 
         : "";
 
     let results = `
@@ -786,17 +787,23 @@ COMPLAINT: ${complaint}
 TECH'S DIAG: ${techDiag}
 SVC ESTIMATE:
 ${laborFormatted}LABOR
+${rrFormatted}RR
+${mileageFormatted}MILEAGE
 ${svcRows}
 ${svcTotalFormatted}TOTAL SVC ($${svcPartsTotal.toFixed(2)} PARTS)
 CTR ESTIMATE:
+${laborFormatted}LABOR
+${rrFormatted}RR
+${mileageFormatted}MILEAGE
 ${ctrRows}
 ${ctrTotalFormatted}TOTAL CTR ($${ctrPartsTotal.toFixed(2)} PARTS)
 LOL: ${lolType}
 LOL VALUE: $${lolValue.toFixed(2)}
-PREVIOUS CLAIMS: $${previousClaims.toFixed(2)}${remainingLOLFormatted ? `\n${remainingLOLFormatted}` : ""}
-MFG COVERAGE:
+PREVIOUS CLAIMS: $${previousClaims.toFixed(2)}
+${remainingLOLFormatted}MFG COVERAGE:
 ${mfgCoverage}
-FINAL RECOMMENDATION: ${finalRecommendation}`.trim();
+FINAL RECOMMENDATION:
+${finalRecommendation}`.trim();
 
     const resultsBox = document.getElementById('results');
     resultsBox.style.fontFamily = 'Courier New, monospace';
@@ -804,6 +811,7 @@ FINAL RECOMMENDATION: ${finalRecommendation}`.trim();
 
     autoResizeTextarea();
 }
+
 
 function autoResizeTextarea() {
     const resultsBox = document.getElementById('results');

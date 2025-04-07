@@ -45,7 +45,7 @@
 
     <!-- Authorization Number -->
     
-    <div style="display: flex; align-items: center; gap: 10px;">
+    <div class="compact flex">
       <label for="authNumber">Authorization :</label>
       <input type="text" id="authNumber" placeholder="Enter Authorization Number" maxlength="13" oninput="formatAuthNumber()" style="width: 200px">
 
@@ -109,9 +109,21 @@
   <label style="margin-left: 10px;">
     <input type="checkbox" id="noRR" checked onchange="toggleField('rrCost', 'noRR')"> No R&R
   </label>
+</div>
+<div style="margin-bottom: 10px;">
+  <label for="taxCost" style="min-width: 100px;">TAXES:</label>
+  <input type="number" id="taxCost" maxlength="12" placeholder="Enter Taxes" style="width: 150px;" oninput="updateTotals()" min="0">
+  
+  <label style="margin-left: 10px;">
+    <input type="checkbox" id="noTAX" checked onchange="toggleField('taxCost', 'noTAX')"> No Taxes
+  </label>
+
+  <button onclick="window.open('TAX EX.PNG', '_blank', 'width=800,height=600')">View Tax Exemptions</button>
+</div>
 
 
 
+<DIV>
         </div>
         <button onclick="addRow('svc')">Add SVC Part</button>
         <table id="svcTable">
@@ -195,7 +207,7 @@
   <p id="repairResults" style="margin: 0;"></p>
 </div>
 
-<div class="compact" style="display: flex; align-items: center; gap: 10px;">
+<div class="compact">
   <label for="expirationDate">Expiration Date:</label>
   <input type="text" id="expirationDate" placeholder="MMDDYY" maxlength="8" oninput="formatExpirationDate()" style="width: 100px;">
   <p id="remainingMonths" style="white-space: nowrap; width: 100px; margin: 0;"></p>
@@ -382,7 +394,7 @@ document.getElementById('openLogButton').addEventListener('click', openLogInBrow
 window.onload = function () {
   toggleField('mileageCost', 'noMileage');
   toggleField('rrCost', 'noRR');
-  
+  toggleField('taxCost', 'noTAX');
   updateTotals(); // Actualizar los cálculos
 }
 
@@ -647,8 +659,9 @@ function calculateMonthsRemaining() {
   let svcLabor = parseFloat(document.getElementById('laborCost').value) || 0;
   let svcMileage = parseFloat(document.getElementById('mileageCost').value) || 0;
   let svcRR = parseFloat(document.getElementById('rrCost').value) || 0;
- 
-  let svcTotal = svcLabor + svcMileage + svcRR;
+  let svcTax = parseFloat(document.getElementById('taxCost').value) || 0;
+
+  let svcTotal = svcLabor + svcMileage + svcRR + svcTax;
   let svcPartsTotal = 0;
 
   // Recolectar partes en SVC y calcular el costo total
@@ -747,7 +760,7 @@ function generateResult() {
           
             // Función para mostrar todos los datos en el área de resultados
            // Función para mostrar todos los datos en el área de resultados
-           function showResults() {
+function showResults() {
     const authNumber = document.getElementById('authNumber').value || "";
     const svcName = document.getElementById('svcName').value || "";
     const model = document.getElementById('model').value || "";
@@ -770,6 +783,9 @@ function generateResult() {
     const mileageCost = mileageCostElement && mileageCostElement.value !== "" 
         ? parseFloat(mileageCostElement.value) 
         : 0; // Asegurarse de que Mileage tenga un valor válido o sea 0
+
+    // **Tax Cost**
+    const taxCost = parseFloat(document.getElementById('taxCost')?.value) || 0; // Taxes
 
     // **SVC Rows**
     const svcRows = Array.from(document.querySelectorAll('#svcTable tbody tr')).map(row => {
@@ -799,7 +815,7 @@ function generateResult() {
         const quantity = parseInt(row.querySelector("td input[placeholder='Qty']")?.value) || 1;
         svcPartsTotal += partCost * quantity;
     });
-    const svcTotal = svcPartsTotal + laborCost + rrCost + mileageCost; // Agregar RR y Mileage
+    const svcTotal = svcPartsTotal + laborCost + rrCost + mileageCost + taxCost; // Incluye taxes
 
     // **CTR Rows**
     const ctrRows = Array.from(document.querySelectorAll('#ctrTable tbody tr')).map(row => {
@@ -829,7 +845,7 @@ function generateResult() {
         const quantity = parseInt(row.querySelector("td input[placeholder='Qty']")?.value) || 1;
         ctrPartsTotal += partCost * quantity;
     });
-    const ctrTotal = ctrPartsTotal + laborCost + rrCost + mileageCost; // Agregar RR y Mileage
+    const ctrTotal = ctrPartsTotal + laborCost + rrCost + mileageCost; // Sin incluir taxes
 
     // Calcular Remaining LOL (si aplica FV-C)
     const lolType = document.querySelector('input[name="lolType"]:checked')?.value || "No LOL Type selected";
@@ -848,6 +864,7 @@ function generateResult() {
     const laborFormatted = `$${laborCost.toFixed(2)}`.padEnd(12);
     const rrFormatted = rrCost > 0 ? `$${rrCost.toFixed(2)}`.padEnd(12) + "RR\n" : ""; // Mostrar RR solo si es mayor a 0
     const mileageFormatted = mileageCost > 0 ? `$${mileageCost.toFixed(2)}`.padEnd(12) + "MILEAGE\n" : ""; // Mostrar Mileage solo si es mayor a 0
+    const taxFormatted = taxCost > 0 ? `$${taxCost.toFixed(2)}`.padEnd(12) + "TAXES\n" : ""; // Mostrar taxes si aplica
     const svcTotalFormatted = `$${svcTotal.toFixed(2)}`.padEnd(12);
     const ctrTotalFormatted = `$${ctrTotal.toFixed(2)}`.padEnd(12);
     const remainingLOLFormatted = remainingLOL !== null 
@@ -864,7 +881,7 @@ COMPLAINT: ${complaint}
 TECH'S DIAG: ${techDiag}
 SVC ESTIMATE:
 ${laborFormatted}LABOR
-${rrFormatted}${mileageFormatted}${svcRows}
+${rrFormatted}${mileageFormatted}${taxFormatted}${svcRows}
 ${svcTotalFormatted}TOTAL SVC ($${svcPartsTotal.toFixed(2)} PARTS)
 CTR ESTIMATE:
 ${laborFormatted}LABOR
@@ -884,7 +901,6 @@ ${finalRecommendation}`.trim();
 
     autoResizeTextarea();
 }
-
 
 
 function autoResizeTextarea() {

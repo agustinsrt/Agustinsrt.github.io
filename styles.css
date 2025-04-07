@@ -177,3 +177,8 @@ button {
 button:hover {
   background-color: #0056b3; /* Oscurece el azul al pasar el mouse */
 }
+
+.tax-image {
+  width: 100%; /* Hace que la imagen abarque todo el ancho del popup */
+  height: auto; /* Mantiene la proporción de la imagen */
+}

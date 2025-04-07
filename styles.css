@@ -1,0 +1,179 @@
+/* Estilos Generales */
+body { 
+    font-family: Arial, sans-serif; 
+    margin: 5px; 
+    font-size: 13px; 
+    line-height: 1.2; 
+  }
+  .container { 
+    max-width: 600px; 
+    margin: auto; 
+  }
+  h2, h3 { 
+    text-align: center; 
+    margin-bottom: 5px; 
+  }
+  label { 
+    font-weight: bold; 
+    display: inline-block; 
+    width: 120px; 
+  }
+  input, textarea, button { 
+    margin: 2px 0; 
+    padding: 5px; 
+    box-sizing: border-box; 
+  }
+  input[type="text"], input[type="number"], textarea { 
+    width: calc(100% - 130px); 
+    height: 22px; 
+  }
+  input[type="number"]::-webkit-inner-spin-button, 
+  input[type="number"]::-webkit-outer-spin-button { 
+    -webkit-appearance: none; 
+    margin: 0; 
+  }
+  input[type="radio"], input[type="checkbox"] { 
+    width: auto; 
+    margin: 0 5px; 
+  }
+  table { 
+    width: 100%; 
+    border-collapse: collapse; 
+    margin-bottom: 5px; 
+  }
+  th, td { 
+    border: 1px solid #ddd; 
+    padding: 4px; 
+    text-align: left; 
+  }
+  th { 
+    background-color: #f4f4f4; 
+  }
+  .subtotal { 
+    font-weight: bold; 
+    text-align: right; 
+  }
+  button { 
+    background-color: #007BFF; 
+    color: white; 
+    border: none; 
+    cursor: pointer; 
+    padding: 5px 10px; 
+    font-size: 13px; 
+  }
+  button:hover { 
+    background-color: #0056b3; 
+  }
+  
+  /* Botón flotante */
+  .floating-menu {
+    position: fixed; /* Siempre visible */
+    top: 20px; /* Ubicado en la esquina superior */
+    left: 20px; /* Ajustado a la izquierda */
+    z-index: 1000; /* Encima de otros elementos */
+  }
+  
+  .menu-button {
+    background-color: #4CAF50; /* Botón verde */
+    color: white;
+    padding: 10px 15px;
+    font-size: 14px;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px; /* Bordes redondeados */
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2); /* Sombra suave */
+  }
+  
+  .menu-button:hover {
+    background-color: #45a049;
+  }
+  
+  /* Menú desplegable */
+  .dropdown-content {
+    display: none; /* Oculto por defecto */
+    position: absolute;
+    top: 35px; /* Ajustamos más cerca del botón */
+    left: 0; /* Alineado con el botón */
+    background-color: #f9f9f9;
+    min-width: 200px;
+    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2); /* Sombra más marcada */
+    z-index: 1001; /* Encima del botón */
+    border-radius: 5px; /* Bordes redondeados */
+  }
+  
+  .dropdown-content a {
+    color: black;
+    padding: 10px 16px;
+    text-decoration: none;
+    display: block;
+  }
+  
+  .dropdown-content a:hover {
+    background-color: #ddd;
+  }
+  
+  /* Mantener el menú visible */
+  .floating-menu:hover .dropdown-content,
+  .dropdown-content:hover {
+    display: block; /* Menú permanece visible al pasar el mouse sobre él */
+  }
+  
+  /* Submenú */
+  .dropdown-submenu {
+    position: relative;
+  }
+  
+  .dropdown-submenu > .submenu-content {
+    display: none;
+    position: absolute;
+    left: 100%; /* Submenú ubicado a la derecha */
+    top: 0;
+    background-color: #f9f9f9;
+    min-width: 200px;
+    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+    z-index: 2;
+    border-radius: 5px;
+  }
+  
+  .dropdown-submenu > .submenu-content a {
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+  }
+  
+  .dropdown-submenu > .submenu-content a:hover {
+    background-color: #ddd;
+  }
+  
+  /* Mostrar submenú al pasar el mouse */
+  .dropdown-submenu:hover > .submenu-content {
+    display: block;
+  }
+  
+  
+  #results {
+  width: 100%; /* Aseguramos que ocupa todo el espacio */
+  height: auto; /* Se adapta al contenido */
+  white-space: pre-wrap; /* Mantiene el texto correctamente visible */
+  font-family: monospace; /* Mantiene estilo legible */
+  margin-top: 10px; /* Separa el cajón del contenido superior */
+  padding: 10px; /* Le da espacio interno para visibilidad */
+  border: 1px solid #ddd; /* Opcional, para claridad visual */
+  overflow-y: auto; /* Permite scroll si el contenido excede el espacio */
+  box-sizing: border-box; /* Asegura que padding no afecta el tamaño */
+}
+
+button {
+  background-color: #007BFF; /* Botón azul */
+  color: white;
+  border: none;
+  cursor: pointer;
+  padding: 5px 10px; /* Tamaño cómodo para clics */
+  font-size: 13px;
+  margin-top: 5px; /* Espaciado adicional */
+}
+
+button:hover {
+  background-color: #0056b3; /* Oscurece el azul al pasar el mouse */
+}

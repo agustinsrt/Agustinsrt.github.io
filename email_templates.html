@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Email Templates</title>
+  <link rel="stylesheet" type="text/css" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <h2>Email Templates</h2>
+    <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+      <thead>
+        <tr style="background-color: #f4f4f4; text-align: left;">
+          <th style="border: 1px solid #ddd; padding: 8px;">Template Name</th>
+          <th style="border: 1px solid #ddd; padding: 8px;">Template Content</th>
+          <th style="border: 1px solid #ddd; padding: 8px;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Template 1 -->
+        <tr>
+          <td style="border: 1px solid #ddd; padding: 8px;">Requesting Diagnosis Information</td>
+          <td style="border: 1px solid #ddd; padding: 8px;">
+            <p><strong>Subject:</strong> Requesting additional information on the diagnosis Contract #</p>
+            <p>Dear [Recipient],</p>
+            <p>
+              Could you please provide a brief diagnosis from the technician explaining the cause of the failure and how it was determined that these parts will effectively repair the unit?<br>
+              This information is required for claim adjudication to promptly decide on the most economical option before proceeding with the repair.
+            </p>
+            <p>Thank you for your assistance.<br>[Your Name]</p>
+          </td>
+          <td style="border: 1px solid #ddd; padding: 8px;">
+            <button onclick="copyToClipboard(this)">Copy</button>
+          </td>
+        </tr>
+        <!-- Template 2 -->
+        <tr>
+          <td style="border: 1px solid #ddd; padding: 8px;">Requesting Replacement Quotes</td>
+          <td style="border: 1px solid #ddd; padding: 8px;">
+            <p><strong>Subject:</strong> Requesting Replacement quotes from Dealers Contract #</p>
+            <p>Dear [Dealer Name],</p>
+            <p>
+              Could you kindly provide us with a comparable replacement quote for our mutual customer while we await the diagnostic report from the servicer? (Please include R&R if applicable.)<br>
+              We are requesting this ahead of adjudication to ensure we have all the necessary documentation to make the best claims decision.
+            </p>
+            <p>
+              Please note that a replacement is not guaranteed at this time.<br>Thank you.<br>[Your Name]
+            </p>
+          </td>
+          <td style="border: 1px solid #ddd; padding: 8px;">
+            <button onclick="copyToClipboard(this)">Copy</button>
+          </td>
+        </tr>
+        <!-- Template 3 -->
+        <tr>
+          <td style="border: 1px solid #ddd; padding: 8px;">Store Credit/Replacement Authorization</td>
+          <td style="border: 1px solid #ddd; padding: 8px;">
+            <p><strong>Subject:</strong> Authorization Code for Store Credit/Replacement</p>
+            <p>Dear [Recipient],</p>
+            <p>
+              We are writing to confirm that the replacement/store credit for our mutual customer has been approved. Please find the details of the approval below:
+            </p>
+            <ul>
+              <li>Customer Name:</li>
+              <li>Authorization Number:</li>
+              <li>Replacement Model:</li>
+              <li>Replacement/Store Credit Amount:</li>
+            </ul>
+            <p>
+              To proceed, please send the invoice to <a href="mailto:Claimsaccounting@centricity.com">Claimsaccounting@centricity.com</a> for processing. Ensure that the invoice details align with the authorized amount.<br>
+              If you have any questions or need assistance, don’t hesitate to reach out to our Claims team at 1-800-622-1100.
+            </p>
+            <p>Thank you for your prompt attention to this matter.<br>[Your Name]</p>
+          </td>
+          <td style="border: 1px solid #ddd; padding: 8px;">
+            <button onclick="copyToClipboard(this)">Copy</button>
+          </td>
+        </tr>
+        <!-- Template 4 -->
+        <tr>
+          <td style="border: 1px solid #ddd; padding: 8px;">Repair Request Denial Notification</td>
+          <td style="border: 1px solid #ddd; padding: 8px;">
+            <p><strong>Subject:</strong> Repair Request Denial Notification</p>
+            <p>Dear [Recipient],</p>
+            <p>
+              We are writing to inform you that the repair request for our mutual customer has been denied. Please find the details of the denial below:
+            </p>
+            <ul>
+              <li>Customer Name:</li>
+              <li>Authorization Number:</li>
+              <li>Reason for Denial: (Referencing the specific reason from the Terms and Conditions)</li>
+            </ul>
+            <p>
+              Please note that we will still cover the cost of the diagnostic/trip charge.<br>
+              If you have any questions or need further clarification, feel free to contact our Claims team at 1-800-622-1100.
+            </p>
+            <p>Sincerely,<br>[Your Name]</p>
+          </td>
+          <td style="border: 1px solid #ddd; padding: 8px;">
+            <button onclick="copyToClipboard(this)">Copy</button>
+          </td>
+        </tr>
+        <!-- Template 5 -->
+        <tr>
+          <td style="border: 1px solid #ddd; padding: 8px;">Repair Request Approval Notification</td>
+          <td style="border: 1px solid #ddd; padding: 8px;">
+            <p><strong>Subject:</strong> Repair Request Approval Notification</p>
+            <p>Dear [Recipient],</p>
+            <p>
+              We are pleased to inform you that your repair request for our mutual customer has been approved. The details of the approval are outlined below:
+            </p>
+            <ul>
+              <li>Customer Name:</li>
+              <li>Authorization Number:</li>
+              <li>Authorization Amount: $</li>
+            </ul>
+            <p>
+              If you have any questions or need further assistance, please don't hesitate to contact our Claims team at 1-800-622-1100.
+            </p>
+            <p>Best regards,<br>[Your Name]</p>
+          </td>
+          <td style="border: 1px solid #ddd; padding: 8px;">
+            <button onclick="copyToClipboard(this)">Copy</button>
+          </td>
+        </tr>
+        <!-- Template 6 -->
+        <tr>
+          <td style="border: 1px solid #ddd; padding: 8px;">Additional Parts Request Approval</td>
+          <td style="border: 1px solid #ddd; padding: 8px;">
+            <p><strong>Subject:</strong> Additional Parts Request: Approval Notification Contract #</p>
+            <p>Hello,</p>
+            <p>
+              We are pleased to inform you that your additional parts needed request for our mutual customer has been approved. The details of the approval are outlined below:
+            </p>
+            <ul>
+              <li>Customer Name:</li>
+              <li>Authorization Number:</li>
+              <li>Authorization Amount:</li>
+            </ul>
+            <p>
+              If you have any questions or need further assistance, please don't hesitate to contact our Claims team at 1-800-622-1100.
+            </p>
+            <p>Best regards,<br>[Your Name]</p>
+          </td>
+          <td style="border: 1px solid #ddd; padding: 8px;">
+            <button onclick="copyToClipboard(this)">Copy</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    // Función para copiar el texto de una fila al portapapeles
+    function copyToClipboard(button) {
+      const textToCopy = button.parentElement.previousElementSibling.innerText;
+
+      navigator.clipboard.writeText(textToCopy).then(() => {
+        const originalText = button.innerText;
+        button.innerText = "Copied!";
+        setTimeout(() => {
+          button.innerText = originalText; // Restaurar el texto después de 2 segundos
+        }, 2000);
+      }).catch(err => console.error('Error copying text:', err));
+    }
+  </script>

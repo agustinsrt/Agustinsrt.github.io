@@ -4,42 +4,30 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Repair Evaluator</title>
-  <link rel="stylesheet" type="text/css" href="styles.css">
-  
+  <style>
+    body { font-family: Arial, sans-serif; margin: 5px; font-size: 13px; line-height: 1.2; }
+    .container { max-width: 600px; margin: auto; }
+    h2, h3 { text-align: center; margin-bottom: 5px; }
+    label { font-weight: bold; display: inline-block; width: 120px; }
+    input, textarea, button { margin: 2px 0; padding: 5px; box-sizing: border-box; }
+    input[type="text"], input[type="number"], textarea { width: calc(100% - 130px); height: 22px; }
+    input[type="number"]::-webkit-inner-spin-button, input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+    input[type="radio"], input[type="checkbox"] { width: auto; margin: 0 5px; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 5px; }
+    th, td { border: 1px solid #ddd; padding: 4px; text-align: left; }
+    th { background-color: #f4f4f4; }
+    .subtotal { font-weight: bold; text-align: right; }
+    button { background-color: #007BFF; color: white; border: none; cursor: pointer; padding: 5px 10px; font-size: 13px; }
+    button:hover { background-color: #0056b3; }
+    .flex { display: flex; align-items: center; gap: 8px; }
+    textarea { resize: none; }
+    .compact { margin-bottom: 5px; }
+    #results { width: 100%; height: auto; white-space: pre-wrap; font-family: monospace; }
+    .search-button { width: auto; margin-left: 5px; }
+    .actions { text-align: center; margin-top: 10px; }
+  </style>
 </head>
 <body>
-
-  <div class="floating-menu">
-    <button class="menu-button">Resources</button>
-    <div class="dropdown-content">
-      <a href="#" onclick="openPopup('tax_exemptions.html', 'Tax Ex')">Tax Exemptions</a>
-      <a href="#" onclick="openPopup('extended_coverage.html', 'MFG Extended Coverage')">MFG Extended Coverage</a>
-      <a href="#" onclick="openPopup('email_templates.html', 'Email Templates')">Email Templates</a>
-      <a href="#" onclick="openPopup('state_abbreviations.html', 'State Abbreviations')">State Abbreviations</a>
-      <a href="#" onclick="openPopup('phone_directory.html', 'Phone Directory')">Phone Directory</a>
-      <a href="#" onclick="openPopup('calculator.html', 'Calculator')">Calculator</a>
-      
-      <!-- Menú Secundario -->
-      <div class="dropdown-submenu">
-        <a href="#">External Sites ▸</a>
-        <div class="submenu-content">
-          <a href="https://www.encompass.com" target="_blank">Encompass</a>
-          <a href="https://my.servicepower.com/" target="_blank">Service Power</a>
-          <a href="https://app.smartsheet.com/b/home?dlp=%2Fsheets%2FMrcwvQwxjwxgrRpJcwGqQVGqHxjgw5c8H9fgfXv1&dlq=view%3Dgrid" target="_blank">Claims Smartsheet</a>
-          <a href="https://app.smartsheet.com/sheets/mH8xqc99V2w7jrMRMXqhPJjM5jfjjcr4hjwfh431" target="_blank">RFA Smartsheet</a>
-        </div>
-      </div>
-    </div>
-  </div>
-    
-
-  
-  
-    </div>
-  </div>
-  
-  
-
   <div class="container">
     <h2>Repair Evaluator</h2>
 
@@ -242,103 +230,49 @@
 <button id="saveToLogButton">Save to Log</button>
 <span id="saveConfirmation" style="display: none; color: green; margin-left: 10px;">Saved!</span>
 <button id="downloadLogButton">Download Log</button>
-<button id="openLogButton">Open Log in Browser</button>
 </div>
-
 <script>
+  // Cargar el log desde LocalStorage al iniciar la página
+  let dailyLog = localStorage.getItem('dailyLog') || ""; // Recuperar el log acumulado
 
-function openPopup(url, title) {
-  // Configuración de la ventana emergente
-  const width = 800;  // Ancho de la ventana
-  const height = 600; // Altura de la ventana
-  const left = (window.screen.width - width) / 2; // Centrar horizontalmente
-  const top = (window.screen.height - height) / 2; // Centrar verticalmente
+  // Función para guardar en el log
+  function saveToLog() {
+    const resultsBox = document.getElementById('results').value; // Obtén los resultados actuales
+    addToDailyLog(resultsBox); // Añade los resultados al log global
+    console.log("Entrada guardada en el log del día");
 
-  // Abrir la ventana emergente
-  const popup = window.open(url, title, `width=${width},height=${height},top=${top},left=${left},resizable=yes,scrollbars=yes`);
-
-  // Verificar que la ventana se abrió correctamente
-  if (!popup) {
-    alert("No se pudo abrir la ventana del recurso. Verifica los permisos del navegador.");
-  }
-}
- // Cargar el log desde LocalStorage al iniciar la página
-let dailyLog = localStorage.getItem('dailyLog') || ""; // Recuperar el log acumulado
-
-// Función para guardar en el log
-function saveToLog() {
-  const resultsBox = document.getElementById('results').value; // Obtén los resultados actuales
-  addToDailyLog(resultsBox); // Añade los resultados al log global
-  console.log("Entrada guardada en el log del día");
-
-  // Mostrar confirmación visual no intrusiva
-  const confirmationMessage = document.getElementById('saveConfirmation');
+    // Mostrar confirmación visual no intrusiva
+ const confirmationMessage = document.getElementById('saveConfirmation');
   confirmationMessage.style.display = 'inline'; // Mostrar el mensaje
   setTimeout(() => {
     confirmationMessage.style.display = 'none'; // Ocultar el mensaje después de 2 segundos
   }, 2000); // 2000 ms = 2 segundos
 }
+ 
 
-// Función para añadir entrada al log diario
-function addToDailyLog(results) {
-  const timestamp = new Date().toLocaleTimeString(); // Hora de la entrada
-  dailyLog += `=== ${timestamp} ===\n${results}\n\n`; // Formato del log
-  localStorage.setItem('dailyLog', dailyLog); // Guardar el log acumulado en LocalStorage
-}
 
-// Función para descargar el archivo del log diario
-function downloadDailyLog() {
-  const date = new Date().toISOString().split("T")[0]; // Fecha del archivo
-  const fileName = `log_${date}.txt`; // Nombre del archivo
-  const blob = new Blob([dailyLog], { type: "text/plain" }); // Crear el archivo de texto
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = fileName; // Configurar la descarga
-  a.click(); // Descargar el archivo
-  console.log("Archivo descargado: " + fileName);
-}
-
-// Función para abrir el log en el navegador
-function openLogInBrowser() {
-  // Crear una nueva ventana o pestaña
-  const logWindow = window.open("", "_blank");
-
-  // Verificar que la ventana se abrió correctamente
-  if (!logWindow) {
-    alert("No se pudo abrir la ventana del log. Verifica los permisos del navegador.");
-    return;
+  // Función para añadir entrada al log diario
+  function addToDailyLog(results) {
+    const timestamp = new Date().toLocaleTimeString(); // Hora de la entrada
+    dailyLog += `=== ${timestamp} ===\n${results}\n\n`; // Formato del log
+    localStorage.setItem('dailyLog', dailyLog); // Guardar el log acumulado en LocalStorage
   }
 
-  // Generar el contenido HTML para mostrar el log
-  const logContent = `
-    <html>
-      <head>
-        <title>Daily Log</title>
-        <style>
-          body {
-            font-family: Courier New, monospace;
-            white-space: pre-wrap; /* Mostrar saltos de línea */
-            margin: 20px;
-          }
-        </style>
-      </head>
-      <body>
-        <h1>Daily Log</h1>
-        <div>${dailyLog || "No entries available."}</div> <!-- Mostrar el log acumulado -->
-      
-  `;
+  // Función para descargar el archivo del log diario
+  function downloadDailyLog() {
+    const date = new Date().toISOString().split("T")[0]; // Fecha del archivo
+    const fileName = `log_${date}.txt`; // Nombre del archivo
+    const blob = new Blob([dailyLog], { type: "text/plain" }); // Crear el archivo de texto
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = fileName; // Configurar la descarga
+    a.click(); // Descargar el archivo
+    console.log("Archivo descargado: " + fileName);
+  }
 
-  // Escribir el contenido en la ventana recién abierta
-  logWindow.document.open();
-  logWindow.document.write(logContent);
-  logWindow.document.close();
-}
-
-// Eventos para los botones
-document.getElementById('saveToLogButton').addEventListener('click', saveToLog);
-document.getElementById('downloadLogButton').addEventListener('click', downloadDailyLog);
-document.getElementById('openLogButton').addEventListener('click', openLogInBrowser);
-
+  // Eventos para los botones
+  document.getElementById('saveToLogButton').addEventListener('click', saveToLog);
+  document.getElementById('downloadLogButton').addEventListener('click', downloadDailyLog);
 
 
             function updateRepairPercentageWithLOL() {

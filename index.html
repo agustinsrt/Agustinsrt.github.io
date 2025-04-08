@@ -261,10 +261,18 @@ function openPopup(url, title) {
     alert("No se pudo abrir la ventana del recurso. Verifica los permisos del navegador.");
   }
 }
- // Cargar el log desde LocalStorage al iniciar la página
-// Inicializar variables clave
-let currentLogDate = new Date().toLocaleDateString(); // Fecha al iniciar
-let dailyLog = localStorage.getItem('dailyLog') || ""; // Recuperar log acumulado
+// Inicializar variables clave al cargar la página
+let currentLogDate = new Date().toLocaleDateString(); // Fecha actual
+let savedLogDate = localStorage.getItem('currentLogDate') || ""; // Fecha guardada previamente
+let dailyLog = localStorage.getItem('dailyLog') || ""; // Log acumulado guardado previamente
+
+// Verificar si ha cambiado el día al cargar la página
+if (currentLogDate !== savedLogDate) {
+    dailyLog = ""; // Reinicia el log si el día ha cambiado
+    localStorage.setItem('dailyLog', dailyLog); // Guardar el nuevo log vacío en LocalStorage
+    localStorage.setItem('currentLogDate', currentLogDate); // Guardar la nueva fecha actual en LocalStorage
+    console.log("El log fue reiniciado automáticamente al cargar la página.");
+}
 
 // Función para guardar en el log
 function saveToLog() {
@@ -277,13 +285,6 @@ function saveToLog() {
     if (!resultsContent) {
         alert("No hay contenido para guardar."); // Evitar guardar si el contenido está vacío
         return;
-    }
-
-    // Verificar si ha cambiado el día
-    if (formattedDate !== currentLogDate) {
-        dailyLog = ""; // Reinicia el log si el día cambió
-        currentLogDate = formattedDate; // Actualiza la fecha actual
-        localStorage.setItem('currentLogDate', currentLogDate); // Guardar la nueva fecha en LocalStorage
     }
 
     // Añadir nueva entrada con fecha y hora
@@ -347,20 +348,19 @@ function openLogInBrowser() {
             <body>
                 <h1>Daily Log</h1>
                 <div>${dailyLog || "No entries available."}</div> <!-- Mostrar el log acumulado -->
-      
-  `;
+           
+    `;
 
-  // Escribir el contenido en la ventana recién abierta
-  logWindow.document.open();
-  logWindow.document.write(logContent);
-  logWindow.document.close();
+    // Escribir el contenido en la ventana recién abierta
+    logWindow.document.open();
+    logWindow.document.write(logContent);
+    logWindow.document.close();
 }
 
 // Eventos para los botones
 document.getElementById('saveToLogButton').addEventListener('click', saveToLog);
 document.getElementById('downloadLogButton').addEventListener('click', downloadDailyLog);
 document.getElementById('openLogButton').addEventListener('click', openLogInBrowser);
-
 
             function updateRepairPercentageWithLOL() {
   const previousRepairs = parseFloat(document.getElementById('previousClaims').value) || 0;

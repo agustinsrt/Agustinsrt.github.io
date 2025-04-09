@@ -311,7 +311,7 @@ function saveToLog() {
     const formattedTime = now.toLocaleTimeString(); // Hora (HH:MM AM/PM)
 
     if (!resultsContent) {
-        alert("No hay contenido para guardar."); // Evitar guardar si el contenido está vacío
+        alert("There´s nothing to save."); // Evitar guardar si el contenido está vacío
         return;
     }
 
@@ -992,8 +992,7 @@ LOL VALUE: $${lolValue.toFixed(2)}
 PREVIOUS CLAIMS: $${previousClaims.toFixed(2)}
 ${remainingLOLFormatted}MFG COVERAGE:
 ${mfgCoverage}
-FINAL RECOMMENDATION:
-${finalRecommendation}`.trim();
+FINAL RECOMMENDATION IS TO ${finalRecommendation}`.trim();
 
     const resultsBox = document.getElementById('results');
     resultsBox.style.fontFamily = 'Courier New, monospace';

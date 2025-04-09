@@ -96,6 +96,7 @@
   <label for="laborCost" style="min-width: 100px;">Labor Cost:</label>
   <input type="number" id="laborCost" placeholder="Enter labor cost" style="width: 150px" oninput="updateTotals()" min="0">
 </div>
+
 <div style="margin-bottom: 10px;">
   <label for="mileageCost" style="min-width: 100px;">Mileage Cost:</label>
   <input type="number" id="mileageCost" maxlength="12" placeholder="Enter mileage cost" style="width: 150px" oninput="updateTotals()" min="0">
@@ -103,6 +104,7 @@
     <input type="checkbox" id="noMileage" checked onchange="toggleField('mileageCost', 'noMileage')"> No Mileage
   </label>
 </div>
+
 <div style="margin-bottom: 10px;">
   <label for="rrCost" style="min-width: 100px;">R&R:</label>
   <input type="number" id="rrCost" maxlength="12" placeholder="Enter R&R cost" style="width: 150px" oninput="updateTotals()" min="0">
@@ -110,52 +112,15 @@
     <input type="checkbox" id="noRR" checked onchange="toggleField('rrCost', 'noRR')"> No R&R
   </label>
 </div>
-<div style="margin-bottom: 10px;">
-  <label for="taxCost" style="min-width: 100px;">TAXES:</label>
-  <input type="number" id="taxCost" maxlength="12" placeholder="Enter Taxes" style="width: 150px;" oninput="updateTotals()" min="0">
-  
-  <label style="margin-left: 10px;">
-    <input type="checkbox" id="noTAX" checked onchange="toggleField('taxCost', 'noTAX')"> No Taxes
-  </label>
 
+
+<div style="display: flex; gap: 10px; align-items: center;">
+  <button class="orange" onclick="addRow('svc')">Add SVC Part</button>
+  <button class="orange" onclick="addSVCTaxes()">Add Taxes</button> <!-- Botón agregado -->
   <button class="orange" onclick="window.open('TAX EX.PNG', '_blank', 'width=800,height=600')">View Tax Exemptions</button>
 </div>
 
-
-
-<DIV>
-        </div>
-        <button class="orange" onclick="addRow('svc')">Add SVC Part</button>
-        <table id="svcTable">
-          <thead>
-            <tr>
-              <th>Part Cost</th>
-              <th>Qty</th>
-              <th>Total Cost</th>
-              <th>Part Number</th>
-              <th>Part Name</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><input type="number" placeholder="Cost" style="width: 90%;" oninput="updateTotals()" min="0"></td>
-              <td><input type="number" placeholder="Qty" style="width: 50px;" oninput="updateTotals()" min="1" max="99" value="1"></td>
-              <td><input type="number" placeholder="Total Cost" style="width: 90%;" readonly></td>
-              <td><input type="text" placeholder="Number" style="width: 90%;"></td>
-              <td><input type="text" placeholder="Name" style="width: 90%;"></td>
-              <td style="display: flex; gap: 5px; justify-content: flex-start;">
-                <button class="orange" onclick="searchEncompass(this)">Encompass</button>
-                <button class="dark-gray" onclick="deleteRow(this)">Delete</button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-        <p class="subtotal" id="svcSubtotal">$0.00   SVC TOTAL <span id="svcPartsBreakdown">($0.00 parts)</span></p>
-<!-- CTR Section -->
-<h3>CTR Estimate</h3>
-<button class="orange" onclick="addRow('ctr')">Add CTR Part</button>
-<table id="ctrTable">
+<table id="svcTable">
   <thead>
     <tr>
       <th>Part Cost</th>
@@ -180,8 +145,31 @@
     </tr>
   </tbody>
 </table>
-<p class="subtotal" id="ctrSubtotal">$0.00   CTR TOTAL <span id="ctrPartsBreakdown">($0.00 parts)</span></p>
 
+<p class="subtotal" id="svcSubtotal">$0.00   SVC TOTAL <span id="svcPartsBreakdown">($0.00 parts)</span></p>
+<!-- CTR Section -->
+<h3>CTR Estimate</h3>
+<div style="display: flex; gap: 10px; align-items: center;">
+    <button class="orange" onclick="addRow('ctr')">Add CTR Part</button>
+    <button class="orange" onclick="addShippingHandling()">Add S&H</button>
+    <button class="orange" onclick="addTaxes()">Add Taxes</button> <!-- Botón de Taxes -->
+</div>
+<table id="ctrTable">
+  <thead>
+    <tr>
+      <th>Part Cost</th>
+      <th>Qty</th>
+      <th>Total Cost</th>
+      <th>Part Number</th>
+      <th>Part Name</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    <!-- Aquí se agregarán las filas dinámicamente -->
+  </tbody>
+</table>
+<p class="subtotal" id="ctrSubtotal">$0.00   CTR TOTAL <span id="ctrPartsBreakdown">($0.00 parts)</span></p>
 
         <!-- LOL Section -->
 <div class="compact">
@@ -240,11 +228,10 @@
       
           <!-- Show Results -->
           <h3>Results</h3>
+          <button class="orange" onclick="showResults()">Show Results</button>
           <textarea id="results" style="width: 100%; border: 1px solid #ccc; padding: 10px;"></textarea>
 
-          
-            <button class="orange" onclick="showResults()">Show Results</button>
-            <button class="orange" id="newRequestButton" onclick="resetPage()">New Request</button>
+                     <button class="orange" id="newRequestButton" onclick="resetPage()">New Request</button>
 
             <!-- Botón para copiar al portapapeles -->
 
@@ -254,8 +241,45 @@
 <button class="orange" id="saveToLogButton">Save to Log</button>
 <span id="saveConfirmation" style="display: none; color: green; margin-left: 10px;">Saved!</span>
 <button class="orange" id="downloadLogButton">Download Log</button>
-<button class="orange" id="openLogButton">Open Log in Browser</button>
+<button class="orange" id="openLogButton">Open Log</button>
 </div>
+
+<!-- Botón para agregar datos a la tabla -->
+<!-- Botón para agregar datos a la tabla -->
+<div class="compact flex">
+  <button id="addRowButton">Agregar a la Tabla</button>
+  <button id="copyTableButton">Copiar Tabla</button> <!-- Nuevo botón para copiar -->
+</div>
+
+<!-- Tabla para mostrar los datos capturados -->
+<table id="dataTable">
+  <thead>
+      <tr>
+          <th>SP Number RFA</th>
+          <th>Date RFA Submitted</th>
+          <th>Date Assigned to Agent</th>
+          <th>Agent Name</th>
+          <th>Status</th>
+          <th>Authorization</th>
+          <th>Current Date</th>
+          <th>SVC Name</th>
+          <th>Comments</th>
+          <th>Req Comp</th>
+          <th>Date Completed</th>
+          <th>Push Back</th>
+          <th>Reason</th>
+          <th>Times Push Back</th>
+          <th>SVC Cost</th>
+          <th>CTR Cost</th>
+          <th>Difference</th>
+          <th>Amount Approved</th>
+          <th>Done</th>
+      </tr>
+  </thead>
+  <tbody>
+      <!-- Aquí se agregarán las filas dinámicamente -->
+  </tbody>
+</table>
 
 <script>
 
@@ -274,90 +298,106 @@ function openPopup(url, title) {
     alert("No se pudo abrir la ventana del recurso. Verifica los permisos del navegador.");
   }
 }
- // Cargar el log desde LocalStorage al iniciar la página
-let dailyLog = localStorage.getItem('dailyLog') || ""; // Recuperar el log acumulado
+// Inicializar variables clave al cargar la página
+let currentLogDate = new Date().toLocaleDateString(); // Fecha actual
+let savedLogDate = localStorage.getItem('currentLogDate') || ""; // Fecha guardada previamente
+let dailyLog = localStorage.getItem('dailyLog') || ""; // Log acumulado guardado previamente
+
+// Verificar si ha cambiado el día al cargar la página
+if (currentLogDate !== savedLogDate) {
+    dailyLog = ""; // Reinicia el log si el día ha cambiado
+    localStorage.setItem('dailyLog', dailyLog); // Guardar el nuevo log vacío en LocalStorage
+    localStorage.setItem('currentLogDate', currentLogDate); // Guardar la nueva fecha actual en LocalStorage
+    console.log("El log fue reiniciado automáticamente al cargar la página.");
+}
 
 // Función para guardar en el log
 function saveToLog() {
-  const resultsBox = document.getElementById('results').value; // Obtén los resultados actuales
-  addToDailyLog(resultsBox); // Añade los resultados al log global
-  console.log("Entrada guardada en el log del día");
+    const resultsBox = document.getElementById('results'); // Referencia al elemento de resultados existente
+    const resultsContent = resultsBox.value.trim(); // Obtener y limpiar el contenido actual
+    const now = new Date();
+    const formattedDate = now.toLocaleDateString(); // Fecha (DD/MM/AAAA)
+    const formattedTime = now.toLocaleTimeString(); // Hora (HH:MM AM/PM)
 
-  // Actualiza el botón Save to Log
-  const saveButton = document.getElementById('saveToLogButton'); // Selecciona el botón por su ID
-  saveButton.classList.add('saved'); // Aplica la clase 'saved'
-  saveButton.disabled = true; // Deshabilita el botón para evitar múltiples clics
+    if (!resultsContent) {
+        alert("No hay contenido para guardar."); // Evitar guardar si el contenido está vacío
+        return;
+    }
 
+    // Añadir nueva entrada con fecha y hora
+    dailyLog += `=== ${formattedDate} - ${formattedTime} ===\n${resultsContent}\n\n`;
 
-  // Mostrar confirmación visual no intrusiva
-  const confirmationMessage = document.getElementById('saveConfirmation');
-  confirmationMessage.style.display = 'inline'; // Mostrar el mensaje
-  setTimeout(() => {
-    confirmationMessage.style.display = 'none'; // Ocultar el mensaje después de 2 segundos
-  }, 2000); // 2000 ms = 2 segundos
+    // Guardar el log en LocalStorage
+    localStorage.setItem('dailyLog', dailyLog);
+
+    console.log("Entrada guardada en el log del día.");
+
+    // Actualizar el estado del botón "Save to Log"
+    const saveButton = document.getElementById('saveToLogButton');
+    saveButton.classList.add('saved');
+    saveButton.disabled = true;
+
+    // Mostrar confirmación visual breve
+    const confirmationMessage = document.getElementById('saveConfirmation');
+    confirmationMessage.style.display = 'inline';
+    setTimeout(() => {
+        confirmationMessage.style.display = 'none';
+    }, 2000);
 }
 
-// Función para añadir entrada al log diario
-function addToDailyLog(results) {
-  const timestamp = new Date().toLocaleTimeString(); // Hora de la entrada
-  dailyLog += `=== ${timestamp} ===\n${results}\n\n`; // Formato del log
-  localStorage.setItem('dailyLog', dailyLog); // Guardar el log acumulado en LocalStorage
-}
-
-// Función para descargar el archivo del log diario
+// Función para descargar el archivo del log
 function downloadDailyLog() {
-  const date = new Date().toISOString().split("T")[0]; // Fecha del archivo
-  const fileName = `log_${date}.txt`; // Nombre del archivo
-  const blob = new Blob([dailyLog], { type: "text/plain" }); // Crear el archivo de texto
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = fileName; // Configurar la descarga
-  a.click(); // Descargar el archivo
-  console.log("Archivo descargado: " + fileName);
+    const date = new Date().toISOString().split("T")[0]; // Fecha para el nombre del archivo
+    const fileName = `log_${date}.txt`; // Nombre del archivo
+    const blob = new Blob([dailyLog], { type: "text/plain" }); // Crear archivo de texto
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = fileName; // Configurar nombre para la descarga
+    a.click();
+    console.log("Archivo descargado:", fileName);
 }
 
-// Función para abrir el log en el navegador
+// Función para abrir el log en una nueva ventana
 function openLogInBrowser() {
-  // Crear una nueva ventana o pestaña
-  const logWindow = window.open("", "_blank");
+    const logWindow = window.open("", "_blank");
 
-  // Verificar que la ventana se abrió correctamente
-  if (!logWindow) {
-    alert("No se pudo abrir la ventana del log. Verifica los permisos del navegador.");
-    return;
-  }
+    // Verificar si se pudo abrir la ventana
+    if (!logWindow) {
+        alert("No se pudo abrir la ventana del log. Verifica los permisos del navegador.");
+        return;
+    }
 
-  // Generar el contenido HTML para mostrar el log
-  const logContent = `
-    <html>
-      <head>
-        <title>Daily Log</title>
-        <style>
-          body {
-            font-family: Courier New, monospace;
-            white-space: pre-wrap; /* Mostrar saltos de línea */
-            margin: 20px;
-          }
-        </style>
-      </head>
-      <body>
-        <h1>Daily Log</h1>
-        <div>${dailyLog || "No entries available."}</div> <!-- Mostrar el log acumulado -->
-      
-  `;
+    // Generar contenido HTML exclusivo para el log
+    const sanitizedLog = dailyLog.replace(/</g, "&lt;").replace(/>/g, "&gt;"); // Sanitizar caracteres HTML
+    const logContent = `
+        <!DOCTYPE html>
+        <html>
+            <head>
+                <title>Daily Log</title>
+                <style>
+                    body {
+                        font-family: "Courier New", monospace;
+                        white-space: pre-wrap; /* Mostrar saltos de línea */
+                        margin: 20px;
+                    }
+                </style>
+            </head>
+            <body>
+                <h1>Daily Log</h1>
+                <div>${dailyLog || "No entries available."}</div> <!-- Mostrar el log acumulado -->
+           
+    `;
 
-  // Escribir el contenido en la ventana recién abierta
-  logWindow.document.open();
-  logWindow.document.write(logContent);
-  logWindow.document.close();
+    // Escribir el contenido en la ventana recién abierta
+    logWindow.document.open();
+    logWindow.document.write(logContent);
+    logWindow.document.close();
 }
 
 // Eventos para los botones
 document.getElementById('saveToLogButton').addEventListener('click', saveToLog);
 document.getElementById('downloadLogButton').addEventListener('click', downloadDailyLog);
 document.getElementById('openLogButton').addEventListener('click', openLogInBrowser);
-
-
 
             function updateRepairPercentageWithLOL() {
   const previousRepairs = parseFloat(document.getElementById('previousClaims').value) || 0;
@@ -400,7 +440,6 @@ document.getElementById('openLogButton').addEventListener('click', openLogInBrow
 window.onload = function () {
   toggleField('mileageCost', 'noMileage');
   toggleField('rrCost', 'noRR');
-  toggleField('taxCost', 'noTAX');
   updateTotals(); // Actualizar los cálculos
 }
 
@@ -665,9 +704,8 @@ function calculateMonthsRemaining() {
   let svcLabor = parseFloat(document.getElementById('laborCost').value) || 0;
   let svcMileage = parseFloat(document.getElementById('mileageCost').value) || 0;
   let svcRR = parseFloat(document.getElementById('rrCost').value) || 0;
-  let svcTax = parseFloat(document.getElementById('taxCost').value) || 0;
-
-  let svcTotal = svcLabor + svcMileage + svcRR + svcTax;
+  
+  let svcTotal = svcLabor + svcMileage + svcRR ;
   let svcPartsTotal = 0;
 
   // Recolectar partes en SVC y calcular el costo total
@@ -763,7 +801,59 @@ function generateResult() {
     alert("Por favor ingresa un número de parte antes de buscar.");
   }
 }
+function addShippingHandling() {
+    const tableBody = document.querySelector(`#ctrTable tbody`);
+    const newRow = document.createElement("tr");
+
+    newRow.innerHTML = `
+        <td><input type="number" placeholder="Cost" style="width: 90%;" oninput="updateTotals()" min="0"></td>
+        <td><input type="number" placeholder="Qty" style="width: 50px;" oninput="updateTotals()" min="1" max="99" value="1"></td>
+        <td><input type="number" placeholder="Total Cost" style="width: 90%;" readonly></td>
+        <td><input type="text" placeholder="Number" style="width: 90%;" value="S&H" readonly></td> <!-- Número predefinido -->
+        <td><input type="text" placeholder="Name" style="width: 90%;"></td> <!-- Nombre editable -->
+        <td style="display: flex; gap: 5px; justify-content: flex-start;">
+            <button class="dark-gray" onclick="deleteRow(this)">Delete</button> <!-- Botón de eliminar -->
+        </td>
+    `;
+
+    tableBody.appendChild(newRow);
+}
+
+function addTaxes() {
+    const tableBody = document.querySelector(`#ctrTable tbody`);
+    const newRow = document.createElement("tr");
+
+    newRow.innerHTML = `
+        <td><input type="number" placeholder="Cost" style="width: 90%;" oninput="updateTotals()" min="0"></td>
+        <td><input type="number" placeholder="Qty" style="width: 50px;" oninput="updateTotals()" min="1" max="99" value="1"></td>
+        <td><input type="number" placeholder="Total Cost" style="width: 90%;" readonly></td>
+        <td><input type="text" placeholder="Number" style="width: 90%;" value="Taxes" readonly></td> <!-- Número predefinido -->
+        <td><input type="text" placeholder="Name" style="width: 90%;"></td> <!-- Nombre editable -->
+        <td style="display: flex; gap: 5px; justify-content: flex-start;">
+            <button class="dark-gray" onclick="deleteRow(this)">Delete</button> <!-- Botón de eliminar -->
+        </td>
+    `;
+
+    tableBody.appendChild(newRow);
+}
           
+function addSVCTaxes() {
+    const tableBody = document.querySelector(`#svcTable tbody`);
+    const newRow = document.createElement("tr");
+
+    newRow.innerHTML = `
+        <td><input type="number" placeholder="Cost" style="width: 90%;" oninput="updateTotals()" min="0"></td>
+        <td><input type="number" placeholder="Qty" style="width: 50px;" oninput="updateTotals()" min="1" max="99" value="1"></td>
+        <td><input type="number" placeholder="Total Cost" style="width: 90%;" readonly></td>
+        <td><input type="text" placeholder="Number" style="width: 90%;" value="Taxes" readonly></td> <!-- Número predefinido -->
+        <td><input type="text" placeholder="Name" style="width: 90%;"></td> <!-- Nombre editable -->
+        <td style="display: flex; gap: 5px; justify-content: flex-start;">
+            <button class="dark-gray" onclick="deleteRow(this)">Delete</button> <!-- Botón de eliminar -->
+        </td>
+    `;
+
+    tableBody.appendChild(newRow);
+}
             // Función para mostrar todos los datos en el área de resultados
            // Función para mostrar todos los datos en el área de resultados
 function showResults() {
@@ -790,10 +880,7 @@ function showResults() {
         ? parseFloat(mileageCostElement.value) 
         : 0; // Asegurarse de que Mileage tenga un valor válido o sea 0
 
-    // **Tax Cost**
-    const taxCost = parseFloat(document.getElementById('taxCost')?.value) || 0; // Taxes
-
-    // **SVC Rows**
+       // **SVC Rows**
     const svcRows = Array.from(document.querySelectorAll('#svcTable tbody tr')).map(row => {
         const partCost = parseFloat(row.querySelector("td input[placeholder='Cost']")?.value) || 0;
         const quantity = parseInt(row.querySelector("td input[placeholder='Qty']")?.value) || 1;
@@ -821,7 +908,7 @@ function showResults() {
         const quantity = parseInt(row.querySelector("td input[placeholder='Qty']")?.value) || 1;
         svcPartsTotal += partCost * quantity;
     });
-    const svcTotal = svcPartsTotal + laborCost + rrCost + mileageCost + taxCost; // Incluye taxes
+    const svcTotal = svcPartsTotal + laborCost + rrCost + mileageCost; // Incluye taxes
 
     // **CTR Rows**
     const ctrRows = Array.from(document.querySelectorAll('#ctrTable tbody tr')).map(row => {
@@ -870,7 +957,6 @@ function showResults() {
     const laborFormatted = `$${laborCost.toFixed(2)}`.padEnd(12);
     const rrFormatted = rrCost > 0 ? `$${rrCost.toFixed(2)}`.padEnd(12) + "RR\n" : ""; // Mostrar RR solo si es mayor a 0
     const mileageFormatted = mileageCost > 0 ? `$${mileageCost.toFixed(2)}`.padEnd(12) + "MILEAGE\n" : ""; // Mostrar Mileage solo si es mayor a 0
-    const taxFormatted = taxCost > 0 ? `$${taxCost.toFixed(2)}`.padEnd(12) + "TAXES\n" : ""; // Mostrar taxes si aplica
     const svcTotalFormatted = `$${svcTotal.toFixed(2)}`.padEnd(12);
     const ctrTotalFormatted = `$${ctrTotal.toFixed(2)}`.padEnd(12);
     const remainingLOLFormatted = remainingLOL !== null 
@@ -887,7 +973,7 @@ COMPLAINT: ${complaint}
 TECH'S DIAG: ${techDiag}
 SVC ESTIMATE:
 ${laborFormatted}LABOR
-${rrFormatted}${mileageFormatted}${taxFormatted}${svcRows}
+${rrFormatted}${mileageFormatted}${svcRows}
 ${svcTotalFormatted}TOTAL SVC ($${svcPartsTotal.toFixed(2)} PARTS)
 CTR ESTIMATE:
 ${laborFormatted}LABOR
@@ -912,8 +998,9 @@ ${finalRecommendation}`.trim();
 function autoResizeTextarea() {
     const resultsBox = document.getElementById('results');
     resultsBox.style.height = 'auto'; // Restablece la altura
-    resultsBox.style.height = `${resultsBox.scrollHeight}px`; // Ajusta al contenido
-    resultsBox.scrollIntoView({ behavior: 'smooth' });
+    resultsBox.style.overflowY = 'hidden'; // Oculta barras de desplazamiento vertical
+    resultsBox.style.height = `${resultsBox.scrollHeight}px`; // Ajusta al contenido dinámicamente
+    resultsBox.scrollIntoView({ behavior: 'smooth' }); // Opcional: desplazar para que sea visible
 }
 
 function resetPage() {
@@ -1000,6 +1087,91 @@ function disableArrowKeys(input) {
     }
   });
 }
+
+
+
+
+// Referencias a los elementos del DOM
+// Referencias a los elementos del DOM
+const addRowButton = document.getElementById('addRowButton');
+const copyTableButton = document.getElementById('copyTableButton'); // Botón para copiar la tabla
+const authInput = document.getElementById('authNumber');
+const svcInput = document.getElementById('svcName');
+const dataTable = document.getElementById('dataTable').getElementsByTagName('tbody')[0];
+
+// Evento para agregar una fila a la tabla
+addRowButton.addEventListener('click', function () {
+    console.log("Botón funcionando"); // Verifica que el evento está activando
+
+    const authValue = authInput.value.trim();
+    const svcValue = svcInput.value.trim();
+
+    // Obtener los valores de SVC y CTR en tiempo real
+    const svcTotal = parseFloat(document.getElementById('svcSubtotal').textContent.replace(/[^0-9.]/g, '')) || 0;
+    const ctrTotal = parseFloat(document.getElementById('ctrSubtotal').textContent.replace(/[^0-9.]/g, '')) || 0;
+
+    const svcTotalValue = `$${svcTotal.toFixed(2)}`;
+    const ctrTotalValue = `$${ctrTotal.toFixed(2)}`;
+
+    // Validar que los campos no estén vacíos
+    if (!authValue || !svcValue) {
+        alert("Por favor, llena ambos campos antes de agregar a la tabla.");
+        return;
+    }
+
+    // Crear una nueva fila en la tabla
+    const newRow = dataTable.insertRow();
+
+    // Lista de valores para cada celda
+    const cellValues = [
+        authValue.slice(0, 7), // SP Number RFA
+        "", // Date RFA Submitted
+        new Date().toLocaleDateString(), // Date Assigned to Agent
+        "", // Agent Name
+        "", // Status
+        authValue.slice(-5), // Authorization
+        new Date().toLocaleDateString(), // Current Date
+        svcValue, // SVC Name
+        "", "", "", "", "", "", // Campos vacíos
+        svcTotalValue, // SVC Cost
+        ctrTotalValue, // CTR Cost
+        "", "", "" // Campos vacíos
+    ];
+
+    // Agregar celdas editables con inputs
+    cellValues.forEach(value => {
+        const cell = newRow.insertCell();
+        const input = document.createElement("input");
+        input.type = "text";
+        input.value = value; // Asigna el valor al input
+        input.style.width = "100%"; // Ajusta el tamaño del input para que se vea bien
+        cell.appendChild(input);
+    });
+
+    // Limpiar los campos después de agregar la fila
+    authInput.value = "";
+    svcInput.value = "";
+});
+
+// Evento para copiar toda la tabla sin los títulos
+copyTableButton.addEventListener('click', function () {
+    let textToCopy = "";
+    const rows = dataTable.querySelectorAll("tr");
+
+    rows.forEach(row => {
+        const cells = row.querySelectorAll("td input");
+        let rowText = Array.from(cells).map(input => input.value).join("\t"); // Separa por tabulación
+        textToCopy += rowText + "\n";
+    });
+
+    // Copiar al portapapeles
+    navigator.clipboard.writeText(textToCopy).then(() => {
+        alert("Tabla copiada, ahora puedes pegarla en Smartsheet.");
+    }).catch(err => {
+        console.error("Error al copiar tabla: ", err);
+    });
+});
+
 
           </script>
     </body>

@@ -231,18 +231,46 @@
           <button class="orange" onclick="showResults()">Show Results</button>
           <textarea id="results" style="width: 100%; border: 1px solid #ccc; padding: 10px;"></textarea>
 
-                     <button class="orange" id="newRequestButton" onclick="resetPage()">New Request</button>
+                             <!-- Botón para copiar al portapapeles -->
 
-            <!-- Botón para copiar al portapapeles -->
+                             <button id="copyButton" class="orange" onclick="copyToClipboard()">Copy to Clipboard</button>
 
-<button class="orange" onclick="copyToClipboard()">Copy to Clipboard</button>
-<span id="copyConfirmation" style="display: none; color: green; margin-left: 10px;">Copied!</span>
-
-<button class="orange" id="saveToLogButton">Save to Log</button>
+<button class="orange" id="saveToLogButton">Save and New</button>
 <span id="saveConfirmation" style="display: none; color: green; margin-left: 10px;">Saved!</span>
 <button class="orange" id="downloadLogButton">Download Log</button>
 <button class="orange" id="openLogButton">Open Log</button>
+<button class="orange" id="copyTableButton">Copy to RFA SS </button>
 </div>
+
+<!-- Tabla oculta para almacenar los datos -->
+<table id="dataTable" style="display: none;">
+<thead>
+    <tr>
+        <th>SP Number RFA</th>
+        <th>Date RFA Submitted</th>
+        <th>Date Assigned to Agent</th>
+        <th>Agent Name</th>
+        <th>Status</th>
+        <th>Authorization</th>
+        <th>Current Date</th>
+        <th>SVC Name</th>
+        <th>Comments</th>
+        <th>Req Comp</th>
+        <th>Date Completed</th>
+        <th>Push Back</th>
+        <th>Reason</th>
+        <th>Times Push Back</th>
+        <th>SVC Cost</th>
+        <th>CTR Cost</th>
+        <th>Difference</th>
+        <th>Amount Approved</th>
+        <th>Done</th>
+    </tr>
+</thead>
+<tbody>
+    <!-- Aquí se agregarán las filas dinámicamente -->
+</tbody>
+</table>
 
 <script>
 
@@ -286,6 +314,23 @@ function saveToLog() {
         alert("No hay contenido para guardar."); // Evitar guardar si el contenido está vacío
         return;
     }
+
+    // Lógica para guardar en el log
+    console.log(`Guardando en el log: [${formattedDate} ${formattedTime}] ${resultsContent}`);
+    // Si tienes un backend, aquí puedes integrar la lógica para enviar el contenido, por ejemplo con fetch()
+
+    // Limpiar el área de resultados después de guardar
+    resultsBox.value = "";
+
+    // Refrescar la página y desplazarse hacia arriba suavemente
+    setTimeout(() => {
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth" // Scroll suave hacia la parte superior
+        });
+        setTimeout(() => location.reload(), 1000); // Refresca la página después de 1 segundo para completar el scroll
+    }, 500); // Espera medio segundo para completar el guardado antes de iniciar el scroll
+
 
     // Añadir nueva entrada con fecha y hora
     dailyLog += `=== ${formattedDate} - ${formattedTime} ===\n${resultsContent}\n\n`;
@@ -966,28 +1011,26 @@ function autoResizeTextarea() {
     resultsBox.scrollIntoView({ behavior: 'smooth' }); // Opcional: desplazar para que sea visible
 }
 
-function resetPage() {
-  // Recargar la página
-  window.location.reload();
-
-  // Opcional: Scroll hacia el inicio (la recarga ya lo hará en la mayoría de navegadores modernos)
-  window.scrollTo(0, 0);
-}
-            
+           
 function copyToClipboard() {
-  const resultsBox = document.getElementById('results');
-  resultsBox.select(); // Seleccionar todo el texto del área de texto
-  resultsBox.setSelectionRange(0, 99999); // Para dispositivos móviles
-  document.execCommand('copy'); // Copiar el texto al portapapeles
+    const resultsBox = document.getElementById('results'); // Referencia al área de texto
+    resultsBox.select(); // Seleccionar el texto del área de texto
+    resultsBox.setSelectionRange(0, 99999); // Para dispositivos móviles
+    document.execCommand('copy'); // Copiar el texto al portapapeles
 
- // Mostrar confirmación visual no intrusiva
- const confirmationMessage = document.getElementById('copyConfirmation');
-  confirmationMessage.style.display = 'inline'; // Mostrar el mensaje
-  setTimeout(() => {
-    confirmationMessage.style.display = 'none'; // Ocultar el mensaje después de 2 segundos
-  }, 2000); // 2000 ms = 2 segundos
+    // Cambiar dinámicamente el texto del botón
+    const copyButton = document.getElementById('copyButton');
+    if (copyButton) {
+        const originalText = copyButton.textContent; // Guarda el texto original
+        copyButton.textContent = "Copied"; // Cambia el texto a "Copied"
+
+        setTimeout(() => {
+            copyButton.textContent = originalText; // Regresa al texto original después de 3 segundos
+        }, 3000);
+    } else {
+        console.error("No se encontró el botón con ID 'copyButton'.");
+    }
 }
-
 document.addEventListener("DOMContentLoaded", () => {
   configureColumnTabbing("#svcTable");
   configureColumnTabbing("#ctrTable");
@@ -1051,6 +1094,139 @@ function disableArrowKeys(input) {
   });
 }
 
+
+
+
+// Referencias a los elementos del DOM
+// Referencias a los elementos del DOM
+const copyTableButton = document.getElementById('copyTableButton');
+const authInput = document.getElementById('authNumber');
+const svcInput = document.getElementById('svcName');
+const dataTable = document.getElementById('dataTable').getElementsByTagName('tbody')[0];
+
+// Función para agregar filas dinámicamente con valores actualizados
+function updateTable() {
+    const authValue = authInput.value.trim();
+    const svcValue = svcInput.value.trim();
+
+    // Validar que los campos no estén vacíos
+    if (!authValue || !svcValue) {
+        return; // No hacemos nada si los campos están vacíos
+    }
+
+    // Obtener los valores de SVC y CTR en tiempo real
+    const svcSubtotalElement = document.getElementById('svcSubtotal');
+    const ctrSubtotalElement = document.getElementById('ctrSubtotal');
+
+    if (!svcSubtotalElement || !ctrSubtotalElement) {
+        console.error("Error: No se encuentran los elementos SVC o CTR en el DOM.");
+        return;
+    }
+
+    const svcTotal = parseFloat(svcSubtotalElement.textContent.replace(/[^0-9.]/g, '')) || 0;
+    const ctrTotal = parseFloat(ctrSubtotalElement.textContent.replace(/[^0-9.]/g, '')) || 0;
+
+    const svcTotalValue = `$${svcTotal.toFixed(2)}`;
+    const ctrTotalValue = `$${ctrTotal.toFixed(2)}`;
+    const differenceValue = `$${(svcTotal - ctrTotal).toFixed(2)}`; // Calcula la diferencia
+
+    // Crear una nueva fila en la tabla
+    const newRow = dataTable.insertRow();
+
+    // Lista de valores para cada celda (en el orden correcto)
+    const cellValues = [
+        authValue.slice(0, 7), // SP Number RFA
+        "", // Date RFA Submitted
+        new Date().toLocaleDateString(), // Date Assigned to Agent
+        "", // Agent Name
+        "", // Status
+        authValue.slice(-5), // Authorization
+        new Date().toLocaleDateString(), // Current Date
+        svcValue, // SVC Name
+        "", // Comments
+        "", // Req Comp
+        "", // Date Completed
+        "NO", // Push Back precargado
+        "", // Reason
+        "0", // Times Push Back precargado
+        svcTotalValue, // SVC Cost
+        ctrTotalValue, // CTR Cost
+        differenceValue, // Difference calculado
+        "", // Amount Approved (en blanco por defecto)
+        "" // Done
+    ];
+
+    // Agregar celdas editables con inputs
+    cellValues.forEach(value => {
+        const cell = newRow.insertCell();
+        const input = document.createElement("input");
+        input.type = "text";
+        input.value = value;
+        input.style.width = "100%";
+        cell.appendChild(input);
+    });
+
+    // Limpiar los campos después de procesar la fila
+    authInput.value = "";
+    svcInput.value = "";
+}
+
+// Función para actualizar dinámicamente los valores de las filas existentes
+function refreshTable() {
+    const svcTotal = parseFloat(document.getElementById('svcSubtotal').textContent.replace(/[^0-9.]/g, '')) || 0;
+    const ctrTotal = parseFloat(document.getElementById('ctrSubtotal').textContent.replace(/[^0-9.]/g, '')) || 0;
+    const differenceValue = (svcTotal - ctrTotal).toFixed(2);
+
+    // Actualizar cada fila con los valores actuales
+    const rows = dataTable.querySelectorAll("tr");
+    rows.forEach(row => {
+        const cells = row.querySelectorAll("td input");
+        if (cells.length > 14) {
+            cells[14].value = `$${svcTotal.toFixed(2)}`; // SVC Cost
+            cells[15].value = `$${ctrTotal.toFixed(2)}`; // CTR Cost
+            cells[16].value = `$${differenceValue}`; // Difference
+        }
+    });
+}
+
+// Copiar los datos de la tabla sin encabezados y cambiar el texto del botón a "Copied"
+copyTableButton.addEventListener('click', function () {
+    let textToCopy = "";
+    const rows = dataTable.querySelectorAll("tr");
+
+    rows.forEach(row => {
+        const cells = row.querySelectorAll("td input");
+        let rowText = Array.from(cells).map(input => input.value).join("\t"); // Separa por tabulación
+        textToCopy += rowText + "\n";
+    });
+
+    navigator.clipboard.writeText(textToCopy).then(() => {
+        const originalText = copyTableButton.textContent; // Guarda el texto original
+        copyTableButton.textContent = "Copied"; // Cambia el texto del botón
+
+        setTimeout(() => {
+            copyTableButton.textContent = originalText; // Regresa al texto original después de 3 segundos
+        }, 3000); // Espera 3 segundos
+    }).catch(err => {
+        console.error("Error al copiar datos: ", err);
+    });
+});
+
+// Detectar cambios en los inputs y agregar filas automáticamente
+authInput.addEventListener('blur', updateTable);
+svcInput.addEventListener('blur', updateTable);
+
+// Actualizar la tabla dinámicamente cuando cambien SVC o CTR
+const svcSubtotalElement = document.getElementById('svcSubtotal');
+const ctrSubtotalElement = document.getElementById('ctrSubtotal');
+
+// Observadores para detectar cambios en los elementos de SVC y CTR
+const observer = new MutationObserver(refreshTable);
+
+if (svcSubtotalElement && ctrSubtotalElement) {
+    observer.observe(svcSubtotalElement, { childList: true, subtree: true });
+    observer.observe(ctrSubtotalElement, { childList: true, subtree: true });
+}
           </script>
     </body>
     </html>                                

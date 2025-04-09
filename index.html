@@ -1094,45 +1094,50 @@ function disableArrowKeys(input) {
 }
 
 
-
-
-// Referencias a los elementos del DOM
+// Función para agregar o actualizar filas dinámicamente
 // Referencias a los elementos del DOM
 const copyTableButton = document.getElementById('copyTableButton');
 const authInput = document.getElementById('authNumber');
 const svcInput = document.getElementById('svcName');
 const dataTable = document.getElementById('dataTable').getElementsByTagName('tbody')[0];
 
-// Función para agregar filas dinámicamente con valores actualizados
+// Objeto de registro para gestionar filas únicas por clave
+const rowRegistry = {};
+
+// Función para agregar o actualizar filas dinámicamente
 function updateTable() {
-    const authValue = authInput.value.trim();
-    const svcValue = svcInput.value.trim();
+    const authValue = authInput.value.trim(); // Valor de Authorization
+    const svcValue = svcInput.value.trim(); // Valor de SVC Name
+
+    console.log("Intentando actualizar fila con valores:", { authValue, svcValue });
 
     // Validar que los campos no estén vacíos
     if (!authValue || !svcValue) {
+        console.log("Campos vacíos, nada que actualizar.");
         return; // No hacemos nada si los campos están vacíos
     }
 
-    // Obtener los valores de SVC y CTR en tiempo real
-    const svcSubtotalElement = document.getElementById('svcSubtotal');
-    const ctrSubtotalElement = document.getElementById('ctrSubtotal');
-
-    if (!svcSubtotalElement || !ctrSubtotalElement) {
-        console.error("Error: No se encuentran los elementos SVC o CTR en el DOM.");
-        return;
+    // Eliminar fila previa si ya existe en el registro
+    if (rowRegistry[authValue]) {
+        console.log("Eliminando fila existente con Authorization:", authValue);
+        rowRegistry[authValue].remove(); // Remover la fila previa del DOM
+        delete rowRegistry[authValue]; // Eliminar del registro
     }
 
-    const svcTotal = parseFloat(svcSubtotalElement.textContent.replace(/[^0-9.]/g, '')) || 0;
-    const ctrTotal = parseFloat(ctrSubtotalElement.textContent.replace(/[^0-9.]/g, '')) || 0;
-
+    // Calcular valores de SVC, CTR y Difference
+    const svcTotal = parseFloat(document.getElementById('svcSubtotal').textContent.replace(/[^0-9.]/g, '')) || 0;
+    const ctrTotal = parseFloat(document.getElementById('ctrSubtotal').textContent.replace(/[^0-9.]/g, '')) || 0;
     const svcTotalValue = `$${svcTotal.toFixed(2)}`;
     const ctrTotalValue = `$${ctrTotal.toFixed(2)}`;
-    const differenceValue = `$${(svcTotal - ctrTotal).toFixed(2)}`; // Calcula la diferencia
+    const differenceValue = `$${(svcTotal - ctrTotal).toFixed(2)}`;
 
-    // Crear una nueva fila en la tabla
+    // Crear nueva fila
     const newRow = dataTable.insertRow();
+    rowRegistry[authValue] = newRow; // Registrar nueva fila en el objeto
 
-    // Lista de valores para cada celda (en el orden correcto)
+    console.log("Nueva fila creada con valores:", { authValue, svcValue });
+
+    // Lista de valores para la fila
     const cellValues = [
         authValue.slice(0, 7), // SP Number RFA
         "", // Date RFA Submitted
@@ -1155,7 +1160,7 @@ function updateTable() {
         "" // Done
     ];
 
-    // Agregar celdas editables con inputs
+    // Crear celdas con inputs editables
     cellValues.forEach(value => {
         const cell = newRow.insertCell();
         const input = document.createElement("input");
@@ -1165,31 +1170,12 @@ function updateTable() {
         cell.appendChild(input);
     });
 
-    // Limpiar los campos después de procesar la fila
-    authInput.value = "";
-    svcInput.value = "";
+    console.log("Fila añadida o actualizada con éxito:", authValue, svcValue);
 }
 
-// Función para actualizar dinámicamente los valores de las filas existentes
-function refreshTable() {
-    const svcTotal = parseFloat(document.getElementById('svcSubtotal').textContent.replace(/[^0-9.]/g, '')) || 0;
-    const ctrTotal = parseFloat(document.getElementById('ctrSubtotal').textContent.replace(/[^0-9.]/g, '')) || 0;
-    const differenceValue = (svcTotal - ctrTotal).toFixed(2);
-
-    // Actualizar cada fila con los valores actuales
-    const rows = dataTable.querySelectorAll("tr");
-    rows.forEach(row => {
-        const cells = row.querySelectorAll("td input");
-        if (cells.length > 14) {
-            cells[14].value = `$${svcTotal.toFixed(2)}`; // SVC Cost
-            cells[15].value = `$${ctrTotal.toFixed(2)}`; // CTR Cost
-            cells[16].value = `$${differenceValue}`; // Difference
-        }
-    });
-}
-
-// Copiar los datos de la tabla sin encabezados y cambiar el texto del botón a "Copied"
+// Función para copiar datos de la tabla sin encabezados
 copyTableButton.addEventListener('click', function () {
+    console.log("Copiando datos de la tabla...");
     let textToCopy = "";
     const rows = dataTable.querySelectorAll("tr");
 
@@ -1200,12 +1186,12 @@ copyTableButton.addEventListener('click', function () {
     });
 
     navigator.clipboard.writeText(textToCopy).then(() => {
-        const originalText = copyTableButton.textContent; // Guarda el texto original
-        copyTableButton.textContent = "Copied"; // Cambia el texto del botón
-
+        console.log("Datos copiados al portapapeles.");
+        const originalText = copyTableButton.textContent; // Guarda el texto original del botón
+        copyTableButton.textContent = "Copied!"; // Cambia el texto del botón
         setTimeout(() => {
             copyTableButton.textContent = originalText; // Regresa al texto original después de 3 segundos
-        }, 3000); // Espera 3 segundos
+        }, 3000); // Tiempo de espera: 3 segundos
     }).catch(err => {
         console.error("Error al copiar datos: ", err);
     });
@@ -1214,18 +1200,6 @@ copyTableButton.addEventListener('click', function () {
 // Detectar cambios en los inputs y agregar filas automáticamente
 authInput.addEventListener('blur', updateTable);
 svcInput.addEventListener('blur', updateTable);
-
-// Actualizar la tabla dinámicamente cuando cambien SVC o CTR
-const svcSubtotalElement = document.getElementById('svcSubtotal');
-const ctrSubtotalElement = document.getElementById('ctrSubtotal');
-
-// Observadores para detectar cambios en los elementos de SVC y CTR
-const observer = new MutationObserver(refreshTable);
-
-if (svcSubtotalElement && ctrSubtotalElement) {
-    observer.observe(svcSubtotalElement, { childList: true, subtree: true });
-    observer.observe(ctrSubtotalElement, { childList: true, subtree: true });
-}
           </script>
     </body>
     </html>                                

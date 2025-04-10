@@ -231,54 +231,45 @@
           <button class="orange" onclick="showResults()">Show Results</button>
           <textarea id="results" style="width: 100%; border: 1px solid #ccc; padding: 10px;"></textarea>
 
-                     <button class="orange" id="newRequestButton" onclick="resetPage()">New Request</button>
+                             <!-- Botón para copiar al portapapeles -->
 
-            <!-- Botón para copiar al portapapeles -->
+                             <button id="copyButton" class="orange" onclick="copyToClipboard()">Copy to Clipboard</button>
 
-<button class="orange" onclick="copyToClipboard()">Copy to Clipboard</button>
-<span id="copyConfirmation" style="display: none; color: green; margin-left: 10px;">Copied!</span>
-
-<button class="orange" id="saveToLogButton">Save to Log</button>
+<button class="orange" id="saveToLogButton">Save and New</button>
 <span id="saveConfirmation" style="display: none; color: green; margin-left: 10px;">Saved!</span>
 <button class="orange" id="downloadLogButton">Download Log</button>
 <button class="orange" id="openLogButton">Open Log</button>
+<button class="orange" id="copyTableButton">Copy to RFA SS </button>
 </div>
 
-<!-- Botón para agregar datos a la tabla -->
-<!-- Botón para agregar datos a la tabla -->
-<div class="compact flex">
-  <button id="addRowButton">Agregar a la Tabla</button>
-  <button id="copyTableButton">Copiar Tabla</button> <!-- Nuevo botón para copiar -->
-</div>
-
-<!-- Tabla para mostrar los datos capturados -->
-<table id="dataTable">
-  <thead>
-      <tr>
-          <th>SP Number RFA</th>
-          <th>Date RFA Submitted</th>
-          <th>Date Assigned to Agent</th>
-          <th>Agent Name</th>
-          <th>Status</th>
-          <th>Authorization</th>
-          <th>Current Date</th>
-          <th>SVC Name</th>
-          <th>Comments</th>
-          <th>Req Comp</th>
-          <th>Date Completed</th>
-          <th>Push Back</th>
-          <th>Reason</th>
-          <th>Times Push Back</th>
-          <th>SVC Cost</th>
-          <th>CTR Cost</th>
-          <th>Difference</th>
-          <th>Amount Approved</th>
-          <th>Done</th>
-      </tr>
-  </thead>
-  <tbody>
-      <!-- Aquí se agregarán las filas dinámicamente -->
-  </tbody>
+<!-- Tabla oculta para almacenar los datos -->
+<table id="dataTable" style="display: none;">
+<thead>
+    <tr>
+        <th>SP Number RFA</th>
+        <th>Date RFA Submitted</th>
+        <th>Date Assigned to Agent</th>
+        <th>Agent Name</th>
+        <th>Status</th>
+        <th>Authorization</th>
+        <th>Current Date</th>
+        <th>SVC Name</th>
+        <th>Comments</th>
+        <th>Req Comp</th>
+        <th>Date Completed</th>
+        <th>Push Back</th>
+        <th>Reason</th>
+        <th>Times Push Back</th>
+        <th>SVC Cost</th>
+        <th>CTR Cost</th>
+        <th>Difference</th>
+        <th>Amount Approved</th>
+        <th>Done</th>
+    </tr>
+</thead>
+<tbody>
+    <!-- Aquí se agregarán las filas dinámicamente -->
+</tbody>
 </table>
 
 <script>
@@ -320,9 +311,26 @@ function saveToLog() {
     const formattedTime = now.toLocaleTimeString(); // Hora (HH:MM AM/PM)
 
     if (!resultsContent) {
-        alert("No hay contenido para guardar."); // Evitar guardar si el contenido está vacío
+        alert("There´s nothing to save."); // Evitar guardar si el contenido está vacío
         return;
     }
+
+    // Lógica para guardar en el log
+    console.log(`Guardando en el log: [${formattedDate} ${formattedTime}] ${resultsContent}`);
+    // Si tienes un backend, aquí puedes integrar la lógica para enviar el contenido, por ejemplo con fetch()
+
+    // Limpiar el área de resultados después de guardar
+    resultsBox.value = "";
+
+    // Refrescar la página y desplazarse hacia arriba suavemente
+    setTimeout(() => {
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth" // Scroll suave hacia la parte superior
+        });
+        setTimeout(() => location.reload(), 1000); // Refresca la página después de 1 segundo para completar el scroll
+    }, 500); // Espera medio segundo para completar el guardado antes de iniciar el scroll
+
 
     // Añadir nueva entrada con fecha y hora
     dailyLog += `=== ${formattedDate} - ${formattedTime} ===\n${resultsContent}\n\n`;
@@ -984,8 +992,7 @@ LOL VALUE: $${lolValue.toFixed(2)}
 PREVIOUS CLAIMS: $${previousClaims.toFixed(2)}
 ${remainingLOLFormatted}MFG COVERAGE:
 ${mfgCoverage}
-FINAL RECOMMENDATION:
-${finalRecommendation}`.trim();
+FINAL RECOMMENDATION IS TO ${finalRecommendation}`.trim();
 
     const resultsBox = document.getElementById('results');
     resultsBox.style.fontFamily = 'Courier New, monospace';
@@ -1003,28 +1010,26 @@ function autoResizeTextarea() {
     resultsBox.scrollIntoView({ behavior: 'smooth' }); // Opcional: desplazar para que sea visible
 }
 
-function resetPage() {
-  // Recargar la página
-  window.location.reload();
-
-  // Opcional: Scroll hacia el inicio (la recarga ya lo hará en la mayoría de navegadores modernos)
-  window.scrollTo(0, 0);
-}
-            
+           
 function copyToClipboard() {
-  const resultsBox = document.getElementById('results');
-  resultsBox.select(); // Seleccionar todo el texto del área de texto
-  resultsBox.setSelectionRange(0, 99999); // Para dispositivos móviles
-  document.execCommand('copy'); // Copiar el texto al portapapeles
+    const resultsBox = document.getElementById('results'); // Referencia al área de texto
+    resultsBox.select(); // Seleccionar el texto del área de texto
+    resultsBox.setSelectionRange(0, 99999); // Para dispositivos móviles
+    document.execCommand('copy'); // Copiar el texto al portapapeles
 
- // Mostrar confirmación visual no intrusiva
- const confirmationMessage = document.getElementById('copyConfirmation');
-  confirmationMessage.style.display = 'inline'; // Mostrar el mensaje
-  setTimeout(() => {
-    confirmationMessage.style.display = 'none'; // Ocultar el mensaje después de 2 segundos
-  }, 2000); // 2000 ms = 2 segundos
+    // Cambiar dinámicamente el texto del botón
+    const copyButton = document.getElementById('copyButton');
+    if (copyButton) {
+        const originalText = copyButton.textContent; // Guarda el texto original
+        copyButton.textContent = "Copied"; // Cambia el texto a "Copied"
+
+        setTimeout(() => {
+            copyButton.textContent = originalText; // Regresa al texto original después de 3 segundos
+        }, 3000);
+    } else {
+        console.error("No se encontró el botón con ID 'copyButton'.");
+    }
 }
-
 document.addEventListener("DOMContentLoaded", () => {
   configureColumnTabbing("#svcTable");
   configureColumnTabbing("#ctrTable");
@@ -1089,72 +1094,135 @@ function disableArrowKeys(input) {
 }
 
 
-
-
+// Función para agregar o actualizar filas dinámicamente
 // Referencias a los elementos del DOM
-// Referencias a los elementos del DOM
-const addRowButton = document.getElementById('addRowButton');
-const copyTableButton = document.getElementById('copyTableButton'); // Botón para copiar la tabla
+const copyTableButton = document.getElementById('copyTableButton');
 const authInput = document.getElementById('authNumber');
 const svcInput = document.getElementById('svcName');
 const dataTable = document.getElementById('dataTable').getElementsByTagName('tbody')[0];
 
-// Evento para agregar una fila a la tabla
-addRowButton.addEventListener('click', function () {
-    console.log("Botón funcionando"); // Verifica que el evento está activando
+// Objeto de registro para gestionar filas únicas por clave
+const rowRegistry = {};
 
-    const authValue = authInput.value.trim();
-    const svcValue = svcInput.value.trim();
+// Función para agregar o actualizar filas dinámicamente
+// Función principal para manejar la tabla
+function updateTable() {
+    const authValue = authInput.value.trim(); // Valor de Authorization
+    const svcValue = svcInput.value.trim(); // Valor de SVC Name
 
-    // Obtener los valores de SVC y CTR en tiempo real
-    const svcTotal = parseFloat(document.getElementById('svcSubtotal').textContent.replace(/[^0-9.]/g, '')) || 0;
-    const ctrTotal = parseFloat(document.getElementById('ctrSubtotal').textContent.replace(/[^0-9.]/g, '')) || 0;
-
-    const svcTotalValue = `$${svcTotal.toFixed(2)}`;
-    const ctrTotalValue = `$${ctrTotal.toFixed(2)}`;
+    console.log("Intentando actualizar fila con valores:", { authValue, svcValue });
 
     // Validar que los campos no estén vacíos
     if (!authValue || !svcValue) {
-        alert("Por favor, llena ambos campos antes de agregar a la tabla.");
+        console.log("Campos vacíos, nada que actualizar.");
+        return; // No hacemos nada si los campos están vacíos
+    }
+
+    // Capturar valores de SVC y CTR actualizados
+    const svcSubtotalElement = document.getElementById('svcSubtotal');
+    const ctrSubtotalElement = document.getElementById('ctrSubtotal');
+
+    if (!svcSubtotalElement || !ctrSubtotalElement) {
+        console.error("Los elementos svcSubtotal o ctrSubtotal no están disponibles en el DOM.");
         return;
     }
 
-    // Crear una nueva fila en la tabla
-    const newRow = dataTable.insertRow();
+    const svcTotal = parseFloat(svcSubtotalElement.textContent.replace(/[^0-9.]/g, '')) || 0;
+    const ctrTotal = parseFloat(ctrSubtotalElement.textContent.replace(/[^0-9.]/g, '')) || 0;
 
-    // Lista de valores para cada celda
+    const svcTotalValue = `$${svcTotal.toFixed(2)}`;
+    const ctrTotalValue = `$${ctrTotal.toFixed(2)}`;
+    const differenceValue = `$${(svcTotal - ctrTotal).toFixed(2)}`;
+
+    console.log("Valores capturados para la tabla:", {
+        svcTotal: svcTotalValue,
+        ctrTotal: ctrTotalValue,
+        difference: differenceValue,
+    });
+
+    // Eliminar fila previa si ya existe en el registro
+    if (rowRegistry[authValue]) {
+        console.log("Eliminando fila existente con Authorization:", authValue);
+        rowRegistry[authValue].remove();
+        delete rowRegistry[authValue];
+    }
+
+    // Crear nueva fila
+    const newRow = dataTable.insertRow();
+    rowRegistry[authValue] = newRow; // Registrar nueva fila en el objeto
+
+    // Lista de valores para la fila
     const cellValues = [
-        authValue.slice(0, 7), // SP Number RFA
-        "", // Date RFA Submitted
-        new Date().toLocaleDateString(), // Date Assigned to Agent
-        "", // Agent Name
-        "", // Status
-        authValue.slice(-5), // Authorization
-        new Date().toLocaleDateString(), // Current Date
-        svcValue, // SVC Name
-        "", "", "", "", "", "", // Campos vacíos
-        svcTotalValue, // SVC Cost
-        ctrTotalValue, // CTR Cost
-        "", "", "" // Campos vacíos
+        authValue.slice(0, 7),  // SP Number RFA
+        "",                     // Date RFA Submitted
+        new Date().toLocaleDateString(),  // Date Assigned to Agent
+        "",                     // Agent Name
+        "",                     // Status
+        authValue.slice(-5),    // Authorization
+        new Date().toLocaleDateString(),  // Current Date
+        svcValue,               // SVC Name
+        "",                     // Comments
+        "",                     // Req Comp
+        "",                     // Date Completed
+        "NO",                   // Push Back (Asegurado)
+        "",                     // Reason
+        "0",                    // Times Push Back precargado
+        svcTotalValue,          // SVC Cost
+        ctrTotalValue,          // CTR Cost
+        differenceValue,        // Difference calculado
+        "",                     // Amount Approved (en blanco por defecto)
+        ""                      // Done
     ];
 
-    // Agregar celdas editables con inputs
-    cellValues.forEach(value => {
+    // Crear celdas con inputs editables
+    cellValues.forEach((value, index) => {
         const cell = newRow.insertCell();
         const input = document.createElement("input");
         input.type = "text";
-        input.value = value; // Asigna el valor al input
-        input.style.width = "100%"; // Ajusta el tamaño del input para que se vea bien
+        input.value = value;
+        input.style.width = "100%";
         cell.appendChild(input);
+
+        console.log(`Celda ${index} añadida con valor: ${value}`);
     });
 
-    // Limpiar los campos después de agregar la fila
-    authInput.value = "";
-    svcInput.value = "";
-});
+    console.log("Fila añadida o actualizada correctamente:", {
+        Authorization: authValue,
+        svcTotal: svcTotalValue,
+        ctrTotal: ctrTotalValue,
+        difference: differenceValue,
+    });
+}
 
-// Evento para copiar toda la tabla sin los títulos
+// **Implementación en tiempo real con MutationObserver**
+function setupRealtimeUpdates() {
+    const svcSubtotalElement = document.getElementById('svcSubtotal');
+    const ctrSubtotalElement = document.getElementById('ctrSubtotal');
+
+    if (!svcSubtotalElement || !ctrSubtotalElement) {
+        console.error("Los elementos svcSubtotal o ctrSubtotal no están disponibles para la observación.");
+        return;
+    }
+
+    const observer = new MutationObserver(() => {
+        console.log("Cambio detectado en SVC o CTR. Actualizando tabla...");
+        // Al detectar cambios, actualizamos la tabla para reflejar los nuevos valores
+        updateTable();
+    });
+
+    // Configuración del MutationObserver para detectar cambios en los valores de subtotales
+    observer.observe(svcSubtotalElement, { childList: true, characterData: true });
+    observer.observe(ctrSubtotalElement, { childList: true, characterData: true });
+
+    console.log("Se han configurado las actualizaciones en tiempo real.");
+}
+
+// Inicializar las actualizaciones en tiempo real
+setupRealtimeUpdates();
+
+// Función para copiar datos de la tabla sin encabezados
 copyTableButton.addEventListener('click', function () {
+    console.log("Copiando datos de la tabla...");
     let textToCopy = "";
     const rows = dataTable.querySelectorAll("tr");
 
@@ -1164,15 +1232,21 @@ copyTableButton.addEventListener('click', function () {
         textToCopy += rowText + "\n";
     });
 
-    // Copiar al portapapeles
     navigator.clipboard.writeText(textToCopy).then(() => {
-        alert("Tabla copiada, ahora puedes pegarla en Smartsheet.");
+        console.log("Datos copiados al portapapeles.");
+        const originalText = copyTableButton.textContent; // Guarda el texto original del botón
+        copyTableButton.textContent = "Copied!"; // Cambia el texto del botón
+        setTimeout(() => {
+            copyTableButton.textContent = originalText; // Regresa al texto original después de 3 segundos
+        }, 3000); // Tiempo de espera: 3 segundos
     }).catch(err => {
-        console.error("Error al copiar tabla: ", err);
+        console.error("Error al copiar datos: ", err);
     });
 });
 
-
+// Detectar cambios en los inputs y agregar filas automáticamente
+authInput.addEventListener('blur', updateTable);
+svcInput.addEventListener('blur', updateTable);
           </script>
     </body>
     </html>                                

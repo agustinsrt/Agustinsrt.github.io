@@ -212,7 +212,7 @@
 
 <!-- Button to calculate LOL percentage -->
 <div class="compact">
-  <button class="orange" onclick="calculateLOLPercentage()">Calculate LOL %</button> <button class="orange" class="orange" onclick="sendCompQuoteEmail()" style="margin-top: 20px;">Request Comp Quote</button> <label for="svcEmail">SVC Email:</label>
+  <button class="orange" onclick="calculateLOLPercentage()">Process</button> <button class="orange" class="orange" onclick="sendCompQuoteEmail()" style="margin-top: 20px;">Request Comp Quote</button> <label for="svcEmail">SVC Email:</label>
   <input type="email" id="svcEmail" placeholder="Enter SVC email" style="width: 185px">
 </div>
 
@@ -1105,6 +1105,7 @@ const dataTable = document.getElementById('dataTable').getElementsByTagName('tbo
 const rowRegistry = {};
 
 // Función para agregar o actualizar filas dinámicamente
+// Función principal para manejar la tabla
 function updateTable() {
     const authValue = authInput.value.trim(); // Valor de Authorization
     const svcValue = svcInput.value.trim(); // Valor de SVC Name
@@ -1117,61 +1118,107 @@ function updateTable() {
         return; // No hacemos nada si los campos están vacíos
     }
 
-    // Eliminar fila previa si ya existe en el registro
-    if (rowRegistry[authValue]) {
-        console.log("Eliminando fila existente con Authorization:", authValue);
-        rowRegistry[authValue].remove(); // Remover la fila previa del DOM
-        delete rowRegistry[authValue]; // Eliminar del registro
+    // Capturar valores de SVC y CTR actualizados
+    const svcSubtotalElement = document.getElementById('svcSubtotal');
+    const ctrSubtotalElement = document.getElementById('ctrSubtotal');
+
+    if (!svcSubtotalElement || !ctrSubtotalElement) {
+        console.error("Los elementos svcSubtotal o ctrSubtotal no están disponibles en el DOM.");
+        return;
     }
 
-    // Calcular valores de SVC, CTR y Difference
-    const svcTotal = parseFloat(document.getElementById('svcSubtotal').textContent.replace(/[^0-9.]/g, '')) || 0;
-    const ctrTotal = parseFloat(document.getElementById('ctrSubtotal').textContent.replace(/[^0-9.]/g, '')) || 0;
+    const svcTotal = parseFloat(svcSubtotalElement.textContent.replace(/[^0-9.]/g, '')) || 0;
+    const ctrTotal = parseFloat(ctrSubtotalElement.textContent.replace(/[^0-9.]/g, '')) || 0;
+
     const svcTotalValue = `$${svcTotal.toFixed(2)}`;
     const ctrTotalValue = `$${ctrTotal.toFixed(2)}`;
     const differenceValue = `$${(svcTotal - ctrTotal).toFixed(2)}`;
+
+    console.log("Valores capturados para la tabla:", {
+        svcTotal: svcTotalValue,
+        ctrTotal: ctrTotalValue,
+        difference: differenceValue,
+    });
+
+    // Eliminar fila previa si ya existe en el registro
+    if (rowRegistry[authValue]) {
+        console.log("Eliminando fila existente con Authorization:", authValue);
+        rowRegistry[authValue].remove();
+        delete rowRegistry[authValue];
+    }
 
     // Crear nueva fila
     const newRow = dataTable.insertRow();
     rowRegistry[authValue] = newRow; // Registrar nueva fila en el objeto
 
-    console.log("Nueva fila creada con valores:", { authValue, svcValue });
-
     // Lista de valores para la fila
     const cellValues = [
-        authValue.slice(0, 7), // SP Number RFA
-        "", // Date RFA Submitted
-        new Date().toLocaleDateString(), // Date Assigned to Agent
-        "", // Agent Name
-        "", // Status
-        authValue.slice(-5), // Authorization
-        new Date().toLocaleDateString(), // Current Date
-        svcValue, // SVC Name
-        "", // Comments
-        "", // Req Comp
-        "", // Date Completed
-        "NO", // Push Back precargado
-        "", // Reason
-        "0", // Times Push Back precargado
-        svcTotalValue, // SVC Cost
-        ctrTotalValue, // CTR Cost
-        differenceValue, // Difference calculado
-        "", // Amount Approved (en blanco por defecto)
-        "" // Done
+        authValue.slice(0, 7),  // SP Number RFA
+        "",                     // Date RFA Submitted
+        new Date().toLocaleDateString(),  // Date Assigned to Agent
+        "",                     // Agent Name
+        "",                     // Status
+        authValue.slice(-5),    // Authorization
+        new Date().toLocaleDateString(),  // Current Date
+        svcValue,               // SVC Name
+        "",                     // Comments
+        "",                     // Req Comp
+        "",                     // Date Completed
+        "NO",                   // Push Back (Asegurado)
+        "",                     // Reason
+        "0",                    // Times Push Back precargado
+        svcTotalValue,          // SVC Cost
+        ctrTotalValue,          // CTR Cost
+        differenceValue,        // Difference calculado
+        "",                     // Amount Approved (en blanco por defecto)
+        ""                      // Done
     ];
 
     // Crear celdas con inputs editables
-    cellValues.forEach(value => {
+    cellValues.forEach((value, index) => {
         const cell = newRow.insertCell();
         const input = document.createElement("input");
         input.type = "text";
         input.value = value;
         input.style.width = "100%";
         cell.appendChild(input);
+
+        console.log(`Celda ${index} añadida con valor: ${value}`);
     });
 
-    console.log("Fila añadida o actualizada con éxito:", authValue, svcValue);
+    console.log("Fila añadida o actualizada correctamente:", {
+        Authorization: authValue,
+        svcTotal: svcTotalValue,
+        ctrTotal: ctrTotalValue,
+        difference: differenceValue,
+    });
 }
+
+// **Implementación en tiempo real con MutationObserver**
+function setupRealtimeUpdates() {
+    const svcSubtotalElement = document.getElementById('svcSubtotal');
+    const ctrSubtotalElement = document.getElementById('ctrSubtotal');
+
+    if (!svcSubtotalElement || !ctrSubtotalElement) {
+        console.error("Los elementos svcSubtotal o ctrSubtotal no están disponibles para la observación.");
+        return;
+    }
+
+    const observer = new MutationObserver(() => {
+        console.log("Cambio detectado en SVC o CTR. Actualizando tabla...");
+        // Al detectar cambios, actualizamos la tabla para reflejar los nuevos valores
+        updateTable();
+    });
+
+    // Configuración del MutationObserver para detectar cambios en los valores de subtotales
+    observer.observe(svcSubtotalElement, { childList: true, characterData: true });
+    observer.observe(ctrSubtotalElement, { childList: true, characterData: true });
+
+    console.log("Se han configurado las actualizaciones en tiempo real.");
+}
+
+// Inicializar las actualizaciones en tiempo real
+setupRealtimeUpdates();
 
 // Función para copiar datos de la tabla sin encabezados
 copyTableButton.addEventListener('click', function () {

@@ -212,8 +212,11 @@
 
 
 <!-- Button to calculate LOL percentage -->
+<!-- Botón "Request Comp Quote" -->
 <div class="compact">
-  <button class="orange" onclick="calculateLOLPercentage()">Process</button> <button class="orange" class="orange" onclick="sendCompQuoteEmail()" style="margin-top: 20px;">Request Comp Quote</button> <label for="svcEmail">SVC Email:</label>
+  <button class="orange" onclick="calculateLOLPercentage()">Process</button> 
+  <button class="orange" onclick="updateTableOnButtonClick(); sendCompQuoteEmail();" style="margin-top: 20px;">Request Comp Quote</button>
+  <label for="svcEmail">SVC Email:</label>
   <input type="email" id="svcEmail" placeholder="Enter SVC email" style="width: 185px">
 </div>
 
@@ -860,6 +863,9 @@ function addShippingHandling() {
     `;
 
     tableBody.appendChild(newRow);
+
+    // Llamar a updateTotals() inmediatamente después de agregar S&H
+    updateTotals();
 }
 
 function addTaxes() {
@@ -1287,6 +1293,40 @@ copyTableButton.addEventListener('click', function () {
 // Detectar cambios en los inputs y agregar filas automáticamente
 authInput.addEventListener('blur', updateTable);
 svcInput.addEventListener('blur', updateTable);
+
+
+function updateTableOnButtonClick() {
+    const rows = document.querySelectorAll("#dataTable tbody tr");
+
+    rows.forEach(row => {
+        const reqCompCell = row.querySelector("td:nth-child(10) input[type='text']"); // Req Comp
+        const commentsCell = row.querySelector("td:nth-child(9) input"); // Comments
+        const doneCell = row.querySelector("td:nth-child(19) input"); // Done
+
+        // Bandera de modificación
+        let rowModified = false;
+
+        // ✅ Req Comp: Si está vacío, asignamos "true"
+        if (reqCompCell && reqCompCell.value.trim() === "") {
+            reqCompCell.value = "true";
+            rowModified = true; // Marcamos que hubo modificación
+        }
+
+        // ✅ Comments: Si está vacío, asignamos "CQ Requested"
+        if (commentsCell && commentsCell.value.trim() === "") {
+            commentsCell.value = "CQ Requested";
+            rowModified = true; // Marcamos que hubo modificación
+        }
+
+        // ✅ Done: Queda vacío si hubo modificaciones, "true" por default si no
+        if (doneCell) {
+            doneCell.value = rowModified ? "" : "true"; // Aplicamos lógica inversa
+        }
+    });
+
+    console.log("✅ Todas las filas fueron procesadas correctamente.");
+}
+
           
  // Función principal para buscar información del SVC
 // Función principal para buscar información del SVC

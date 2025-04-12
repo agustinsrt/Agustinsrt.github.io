@@ -55,9 +55,10 @@
 
     <!-- General Inputs -->
     <div class="compact flex">
-      <label for="svcName">SVC Name:</label>
-      <input type="text" id="svcName" placeholder="Enter SVC Name">
-    </div>
+  <label for="svcName">SVC Name:</label>
+  <input type="text" id="svcName" placeholder="Enter SVC Name"  style="width: 300px">
+  <button class="orange" onclick="getSVCInfo()">Search SVC</button> <!-- Botón para buscar SVC -->
+</div>
 
     <div class="compact flex">
       <label for="model" >Model:</label>
@@ -212,7 +213,7 @@
 
 <!-- Button to calculate LOL percentage -->
 <div class="compact">
-  <button class="orange" onclick="calculateLOLPercentage()">Calculate LOL %</button> <button class="orange" class="orange" onclick="sendCompQuoteEmail()" style="margin-top: 20px;">Request Comp Quote</button> <label for="svcEmail">SVC Email:</label>
+  <button class="orange" onclick="calculateLOLPercentage()">Process</button> <button class="orange" class="orange" onclick="sendCompQuoteEmail()" style="margin-top: 20px;">Request Comp Quote</button> <label for="svcEmail">SVC Email:</label>
   <input type="email" id="svcEmail" placeholder="Enter SVC email" style="width: 185px">
 </div>
 
@@ -498,62 +499,61 @@ const mailtoLink = `mailto:${svcEmail}?subject=${subject}&body=${body}`;
 }
 
 function calculateLOLPercentage() {
-  // Obtener valores necesarios
-  const previousClaims = parseFloat(document.getElementById('previousClaims').value) || 0;
-  const applianceValue = parseFloat(document.getElementById('applianceValue').value) || 0;
+    // Obtener valores necesarios
+    const previousClaims = parseFloat(document.getElementById('previousClaims').value) || 0;
+    const applianceValue = parseFloat(document.getElementById('applianceValue').value) || 0; // LOL
 
-  // Calcular los meses restantes del ESP
-  const espMonthsLeftText = calculateESPMonthsLeft();
+    // Calcular los meses restantes del ESP
+    const espMonthsLeftText = calculateESPMonthsLeft();
 
-  // Obtener totales de SVC y CTR
-  const svcTotal = parseFloat(document.getElementById('svcSubtotal').textContent.replace(/[^0-9.]/g, '')) || 0;
-  const ctrTotal = parseFloat(document.getElementById('ctrSubtotal').textContent.replace(/[^0-9.]/g, '')) || 0;
+    // Obtener totales de SVC y CTR
+    const svcTotal = parseFloat(document.getElementById('svcSubtotal').textContent.replace(/[^0-9.]/g, '')) || 0;
+    const ctrTotal = parseFloat(document.getElementById('ctrSubtotal').textContent.replace(/[^0-9.]/g, '')) || 0;
 
-  // Determinar el tipo de LOL (FV o FV-C)
-  const lolType = document.querySelector('input[name="lolType"]:checked')?.value || "FV";
+    // Determinar el tipo de LOL (FV o FV-C)
+    const lolType = document.querySelector('input[name="lolType"]:checked')?.value || "FV";
 
-  // Calcular Remaining LOL si FV-C está seleccionado
-  const remainingLOL = lolType === "FV-C" ? applianceValue - previousClaims : null;
+    // Calcular Remaining LOL si FV-C está seleccionado
+    const remainingLOL = lolType === "FV-C" ? applianceValue - previousClaims : applianceValue;
 
-  // Calcular porcentajes de LOL para SVC y CTR
-  const maxLOL = remainingLOL !== null ? remainingLOL : applianceValue; // Usar Remaining LOL si está disponible
-  const svcLOLPercentage = maxLOL > 0 ? ((previousClaims + svcTotal) / maxLOL) * 100 : 0;
-  const ctrLOLPercentage = maxLOL > 0 ? ((previousClaims + ctrTotal) / maxLOL) * 100 : 0;
+    // Calcular porcentajes de LOL para SVC y CTR usando **remainingLOL**
+    const svcLOLPercentage = remainingLOL > 0 ? ((previousClaims + svcTotal) / applianceValue) * 100 : 0;
+    const ctrLOLPercentage = remainingLOL > 0 ? ((previousClaims + ctrTotal) / applianceValue) * 100 : 0;
 
-  // Determinar los límites de riesgo según meses restantes en el ESP
-  const espMonthsLeft = typeof espMonthsLeftText === "number" ? espMonthsLeftText : -1; // Valor numérico o expirado
-  const lolLimit = espMonthsLeft < 6 && espMonthsLeft >= 0 ? 70 : 60;
+    // Determinar los límites de riesgo según meses restantes en el ESP
+    const espMonthsLeft = typeof espMonthsLeftText === "number" ? espMonthsLeftText : -1;
+    const lolLimit = espMonthsLeft < 6 && espMonthsLeft >= 0 ? 70 : 60;
 
-  // Determinar el porcentaje de LOL más bajo entre SVC y CTR
-  const lowestLOLPercentage = Math.min(svcLOLPercentage, ctrLOLPercentage);
+    // Determinar el porcentaje de LOL más bajo entre SVC y CTR
+    const lowestLOLPercentage = Math.min(svcLOLPercentage, ctrLOLPercentage);
 
-  // Obtener la fecha actual en formato MM-DD-YYYY
-  const currentDate = new Date();
-  const formattedDate = `${(currentDate.getMonth() + 1).toString().padStart(2, '0')}-${currentDate.getDate().toString().padStart(2, '0')}-${currentDate.getFullYear()}`;
+    // Obtener la fecha actual en formato MM-DD-YYYY
+    const currentDate = new Date();
+    const formattedDate = `${(currentDate.getMonth() + 1).toString().padStart(2, '0')}-${currentDate.getDate().toString().padStart(2, '0')}-${currentDate.getFullYear()}`;
 
-  // Espacio para el correo del SVC
-  const svcEmail = document.getElementById('svcEmail')?.value || '____________'; // Si no se ingresa correo, dejar espacio en blanco
+    // Espacio para el correo del SVC
+    const svcEmail = document.getElementById('svcEmail')?.value || '____________';
 
-  // Generar la recomendación final
-  let finalRecommendation = "";
+    // Generar la recomendación final
+    let finalRecommendation = "";
 
-  if (svcLOLPercentage <= lolLimit && ctrLOLPercentage <= lolLimit) {
-    if (svcTotal <= ctrTotal + 35) {
-      finalRecommendation = `Approve SVC repairs for $${svcTotal.toFixed(2)}. Repairs will reach ${svcLOLPercentage > 100 ? "exceed LOL," : `${Math.round(svcLOLPercentage)}% LOL,`} ${espMonthsLeftText === "agreement already expired," ? "with agreement already expired," : `with ${espMonthsLeftText} months left,`} Repair is the best option.`;
+    if (svcLOLPercentage <= lolLimit && ctrLOLPercentage <= lolLimit) {
+        if (svcTotal <= ctrTotal + 35) {
+            finalRecommendation = `Approve SVC repairs for $${svcTotal.toFixed(2)}. Repairs will reach ${Math.round(svcLOLPercentage)}% LOL, ${espMonthsLeftText === "agreement already expired," ? "with agreement already expired," : `with ${espMonthsLeftText} months left,`} Repair is the best option.`;
+        } else {
+            finalRecommendation = `Approve CTR repairs for $${ctrTotal.toFixed(2)}. Repairs will reach ${Math.round(ctrLOLPercentage)}% LOL, ${espMonthsLeftText === "agreement already expired," ? "with agreement already expired," : `with ${espMonthsLeftText} months left,`} Repair is the best option.`;
+        }
+    } else if (svcLOLPercentage <= lolLimit) {
+        finalRecommendation = `Approve SVC repairs for $${svcTotal.toFixed(2)}. Repairs will reach ${Math.round(svcLOLPercentage)}% LOL, ${espMonthsLeftText === "agreement already expired," ? "with agreement already expired," : `with ${espMonthsLeftText} months left,`} Repair is the best option.`;
+    } else if (ctrLOLPercentage <= lolLimit) {
+        finalRecommendation = `Approve CTR repairs for $${ctrTotal.toFixed(2)}. Repairs will reach ${Math.round(ctrLOLPercentage)}% LOL, ${espMonthsLeftText === "agreement already expired," ? "with agreement already expired," : `with ${espMonthsLeftText} months left,`} Repair is the best option.`;
     } else {
-      finalRecommendation = `Approve CTR repairs for $${ctrTotal.toFixed(2)}. Repairs will reach ${ctrLOLPercentage > 100 ? "exceed LOL," : `${Math.round(ctrLOLPercentage)}% LOL,`} ${espMonthsLeftText === "agreement already expired," ? "with agreement already expired," : `with ${espMonthsLeftText} months left,`} Repair is the best option.`;
-    }
-  } else if (svcLOLPercentage <= lolLimit) {
-    finalRecommendation = `Approve SVC repairs for $${svcTotal.toFixed(2)}. Repairs will reach ${svcLOLPercentage > 100 ? "exceed LOL," : `${Math.round(svcLOLPercentage)}% LOL,`} ${espMonthsLeftText === "agreement already expired," ? "with agreement already expired," : `with ${espMonthsLeftText} months left,`} Repair is the best option.`;
-  } else if (ctrLOLPercentage <= lolLimit) {
-    finalRecommendation = `Approve CTR repairs for $${ctrTotal.toFixed(2)}. Repairs will reach ${ctrLOLPercentage > 100 ? "exceed LOL," : `${Math.round(ctrLOLPercentage)}% LOL,`} ${espMonthsLeftText === "agreement already expired," ? "with agreement already expired," : `with ${espMonthsLeftText} months left,`} Repair is the best option.`;
-  } else {
-    finalRecommendation = `
-Repairs will ${lowestLOLPercentage > 100 ? "exceed LOL," : `reach ${Math.round(lowestLOLPercentage)}% LOL`} ${espMonthsLeftText === "agreement already expired," ? "with agreement already expired," : `with ${espMonthsLeftText} months left,`} Best option is to evaluate alternate resolution, request comparable replacement quote to DLR.
+        finalRecommendation = `
+Repairs will reach ${Math.round(lowestLOLPercentage)}% LOL, ${espMonthsLeftText === "agreement already expired," ? "with agreement already expired," : `with ${espMonthsLeftText} months left,`} Best option is to evaluate alternate resolution, request comparable replacement quote to DLR.
 (Internal Claims notes only: Email sent to: ${svcEmail} on ${formattedDate})
 ***REPLACEMENT IS NOT GUARANTEED***
 `.trim();
-  }
+    }
 
   // Mostrar la recomendación en el Textarea de Final Recommendation
   document.getElementById('finalRecommendation').value = finalRecommendation;
@@ -814,17 +814,55 @@ function addShippingHandling() {
     const newRow = document.createElement("tr");
 
     newRow.innerHTML = `
-        <td><input type="number" placeholder="Cost" style="width: 90%;" oninput="updateTotals()" min="0"></td>
-        <td><input type="number" placeholder="Qty" style="width: 50px;" oninput="updateTotals()" min="1" max="99" value="1"></td>
-        <td><input type="number" placeholder="Total Cost" style="width: 90%;" readonly></td>
-        <td><input type="text" placeholder="Number" style="width: 90%;" value="S&H" readonly></td> <!-- Número predefinido -->
-        <td><input type="text" placeholder="Name" style="width: 90%;"></td> <!-- Nombre editable -->
+        <td>
+            <input 
+                type="number" 
+                placeholder="Cost" 
+                style="width: 90%;" 
+                oninput="updateTotals()" 
+                min="0" 
+                value="11.95"> <!-- Precargado con $11.95 -->
+        </td>
+        <td>
+            <input 
+                type="number" 
+                placeholder="Qty" 
+                style="width: 50px;" 
+                oninput="updateTotals()" 
+                min="1" 
+                max="99" 
+                value="1"> <!-- Valor predeterminado para Qty -->
+        </td>
+        <td>
+            <input 
+                type="number" 
+                placeholder="Total Cost" 
+                style="width: 90%;" 
+                readonly> <!-- Solo lectura -->
+        </td>
+        <td>
+            <input 
+                type="text" 
+                placeholder="Number" 
+                style="width: 90%;" 
+                value="S&H" 
+                readonly> <!-- Número predefinido -->
+        </td>
+        <td>
+            <input 
+                type="text" 
+                placeholder="Name" 
+                style="width: 90%;"> <!-- Nombre editable -->
+        </td>
         <td style="display: flex; gap: 5px; justify-content: flex-start;">
             <button class="dark-gray" onclick="deleteRow(this)">Delete</button> <!-- Botón de eliminar -->
         </td>
     `;
 
     tableBody.appendChild(newRow);
+
+    // Llamar a updateTotals() inmediatamente después de agregar S&H
+    updateTotals();
 }
 
 function addTaxes() {
@@ -971,7 +1009,13 @@ function showResults() {
         ? `Remaining LOL: $${remainingLOL.toFixed(2)}\n` 
         : "";
 
-    let results = `
+    // Ajuste en la generación del texto final dentro de showResults()
+let formattedRecommendation = finalRecommendation.includes("Best option is to evaluate alternate resolution")
+    ? finalRecommendation // Mostrar solo la recomendación sin encabezado
+    : `FINAL RECOMMENDATION IS TO ${finalRecommendation}`.trim();
+
+// Formatear resultados con la recomendación corregida
+let results = `
 AUTH: ${authNumber}
 RECEIVED AN RFA FROM ${svcName}
 MODEL: ${model}
@@ -992,8 +1036,7 @@ LOL VALUE: $${lolValue.toFixed(2)}
 PREVIOUS CLAIMS: $${previousClaims.toFixed(2)}
 ${remainingLOLFormatted}MFG COVERAGE:
 ${mfgCoverage}
-FINAL RECOMMENDATION IS TO ${finalRecommendation}`.trim();
-
+${formattedRecommendation}`.trim();
     const resultsBox = document.getElementById('results');
     resultsBox.style.fontFamily = 'Courier New, monospace';
     resultsBox.value = results;
@@ -1247,6 +1290,173 @@ copyTableButton.addEventListener('click', function () {
 // Detectar cambios en los inputs y agregar filas automáticamente
 authInput.addEventListener('blur', updateTable);
 svcInput.addEventListener('blur', updateTable);
+          
+ // Función principal para buscar información del SVC
+// Función principal para buscar información del SVC
+function getSVCInfo() {
+  const svcName = document.getElementById('svcName').value.trim().toLowerCase(); // Limpia espacios y convierte a minúsculas
+  if (!svcName) {
+    alert('Please enter an SVC Name.'); // Mensaje si el campo está vacío
+    return;
+  }
+
+  fetch('svc_database.json') // Cargar datos desde el archivo JSON
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`Error loading SVC data: ${response.status}`);
+      }
+      return response.json();
+    })
+    .then(data => {
+      const exactMatch = data.find(svc => normalizeString(svc.SVC_Name) === normalizeString(svcName)); // Buscar coincidencia exacta
+      const partialMatches = data.filter(svc => normalizeString(svc.SVC_Name).includes(normalizeString(svcName))); // Buscar coincidencias parciales
+
+      if (exactMatch) {
+        showPopup(exactMatch); // Mostrar popup si hay coincidencia exacta
+      } else if (partialMatches.length > 0) {
+        showSuggestions(partialMatches); // Mostrar sugerencias si hay coincidencias parciales
+      } else {
+        alert('No matches found.'); // Mensaje si no hay coincidencias
+      }
+    })
+    .catch(error => {
+      console.error('Fetch Error:', error); // Mostrar cualquier error en la consola
+      alert('An error occurred while fetching the SVC data. Check the console for details.');
+    });
+}
+
+// Función para mostrar un popup con la información detallada del SVC
+function showPopup(svc) {
+  const diagCost = parseFloat(svc.Diag_Cost.replace('$', '').trim()) || 0; // Convertir a número o asignar 0 si está vacío
+  const laborCost = parseFloat(svc.Labor_Cost.replace('$', '').trim()) || 0;
+  const sealSystemLabor = parseFloat(svc["Major_Repair_/_Sealed_System"].replace('$', '').trim()) || 0;
+
+  const styles = `
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f0f0f5;
+        color: #2a2f42;
+        margin: 20px;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px #2a2f42;
+      }
+      h2 {
+        color: #2a2f42;
+        text-align: center;
+        margin-bottom: 20px;
+      }
+      p {
+        font-size: 16px;
+        line-height: 1.5;
+      }
+      strong {
+        color: #2a2f42;
+      }
+    </style>
+  `;
+
+  const info = `
+    ${styles}
+    <body>
+      <h2>SVC Information</h2>
+      <p><strong>SVC Code:</strong> ${svc.SVC_Code}</p>
+      <p><strong>SVC Name:</strong> ${svc.SVC_Name}</p>
+      <p><strong>Diag:</strong> $${diagCost.toFixed(2)}</p>
+      <p><strong>Labor:</strong> $${laborCost.toFixed(2)}</p>
+      <p><strong>Seal System Labor:</strong> $${sealSystemLabor.toFixed(2)}</p>
+      <p><strong>Shipping Address:</strong> ${svc.Shipping_Address}</p>
+    </body>
+  `;
+
+  const popup = window.open('', '_blank', 'width=500,height=400'); // Abrir nuevo popup
+  popup.document.write(info); // Escribir contenido en el popup
+  popup.document.close(); // Finalizar el documento
+}
+
+// Función para mostrar una lista de sugerencias en un popup
+function showSuggestions(matches) {
+  const styles = `
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #2a2f42;
+        color: #333;
+        margin: 20px;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      }
+      h2 {
+        color: ORANGE;
+        text-align: center;
+        margin-bottom: 20px;
+      }
+      ul {
+        list-style-type: none;
+        padding: 0;
+      }
+      li {
+        padding: 10px;
+        margin: 5px 0;
+        background-color: #ffffff;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
+      li:hover {
+        background-color: #e0e0e5;
+      }
+    </style>
+  `;
+
+  const suggestionList = matches.map(match => {
+    return `<li onclick="window.opener.selectSuggestion('${match.SVC_Code}')">${match.SVC_Name} (${match.SVC_Code})</li>`;
+  }).join('');
+
+  const suggestionsHTML = `
+    ${styles}
+    <body>
+      <h2>Suggestions</h2>
+      <ul>${suggestionList}</ul>
+    </body>
+  `;
+
+  const popup = window.open('', '_blank', 'width=400,height=300'); // Abrir nuevo popup para sugerencias
+  popup.document.write(suggestionsHTML); // Escribir contenido en el popup
+  popup.document.close(); // Finalizar el documento
+}
+
+// Función global para manejar la selección de una sugerencia
+function selectSuggestion(svcCode) {
+  fetch('svc_database.json') // Volver a cargar los datos desde el archivo JSON
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`Error loading SVC data: ${response.status}`);
+      }
+      return response.json();
+    })
+    .then(data => {
+      const selectedSVC = data.find(match => match.SVC_Code === svcCode); // Buscar el SVC seleccionado
+      if (selectedSVC) {
+        showPopup(selectedSVC); // Mostrar la información del SVC seleccionado
+      }
+    })
+    .catch(error => {
+      console.error('Fetch Error in selectSuggestion:', error); // Mostrar cualquier error
+      alert('An error occurred while fetching the SVC data. Check the console for details.');
+    });
+}
+
+// Función para normalizar cadenas de texto
+function normalizeString(str) {
+  return str
+    .toLowerCase() // Convertir a minúsculas
+    .replace(/\s+/g, ' ') // Reemplazar múltiples espacios por uno solo
+    .trim(); // Eliminar espacios al principio y al final
+}
           </script>
     </body>
     </html>                                

@@ -9,6 +9,19 @@
 </head>
 <body>
 
+  <div id="timerDisplay" style="
+    position: fixed;
+    bottom: 10px;
+    right: 10px;
+    background: #222;
+    color: #fff;
+    padding: 5px 10px;
+    font-size: 14px;
+    border-radius: 5px;
+    opacity: 0.8;
+">00:00</div>
+
+
   <div class="floating-menu">
     <button class="orange">Resources</button>
     <div class="dropdown-content">
@@ -71,11 +84,11 @@
       <input type="text" id="serial" placeholder="Enter Serial" style="width: 200px">
     </div>
 
-    <div class="compact"  style="margin-bottom: 10px;">
+    <div class="compact" style="margin-bottom: 10px;">
       <label>Physical Damage:</label>
       <input type="radio" name="physicalDamage" value="yes"> Yes
-      <input type="radio" name="physicalDamage" value="no"> No
-    </div>
+      <input type="radio" name="physicalDamage" value="no" checked> No <!-- 🔹 Marcamos "No" por defecto -->
+  </div>
 
     <div class="compact">
       <label for="complaint">Complaint:</label>
@@ -212,10 +225,9 @@
 
 
 <!-- Button to calculate LOL percentage -->
-<!-- Botón "Request Comp Quote" -->
 <div class="compact">
   <button class="orange" onclick="calculateLOLPercentage()">Process</button> 
-  <button class="orange" onclick="updateTableOnButtonClick(); sendCompQuoteEmail();" style="margin-top: 20px;">Request Comp Quote</button>
+  <button class="orange" onclick="updateTableOnButtonClick(); sendCompQuoteEmail(); registerCompQuote();" style="margin-top: 20px;">Request Comp Quote</button>
   <label for="svcEmail">SVC Email:</label>
   <input type="email" id="svcEmail" placeholder="Enter SVC email" style="width: 185px">
 </div>
@@ -306,56 +318,176 @@ if (currentLogDate !== savedLogDate) {
     console.log("El log fue reiniciado automáticamente al cargar la página.");
 }
 
-// Función para guardar en el log
+
+
+
+// Inicializar valores con verificación en LocalStorage
+const initializeStorage = (key, defaultValue) => {
+    if (localStorage.getItem(key) === null) {
+        localStorage.setItem(key, defaultValue);
+    }
+};
+
+// Inicializar las variables necesarias
+initializeStorage("totalTimeSpent", "0");
+initializeStorage("claimsProcessed", "0");
+initializeStorage("compQuoteRequests", "0");
+initializeStorage("svcApprovals", "0");
+initializeStorage("svcTotalAmount", "0");
+initializeStorage("ctrApprovals", "0");
+initializeStorage("ctrTotalAmount", "0");
+
+// Variables globales acumulativas
+let totalTimeSpent = parseFloat(localStorage.getItem("totalTimeSpent"));
+let claimsProcessed = parseInt(localStorage.getItem("claimsProcessed"));
+let compQuoteRequests = parseInt(localStorage.getItem("compQuoteRequests"));
+let svcApprovals = parseInt(localStorage.getItem("svcApprovals"));
+let svcTotalAmount = parseFloat(localStorage.getItem("svcTotalAmount"));
+let ctrApprovals = parseInt(localStorage.getItem("ctrApprovals"));
+let ctrTotalAmount = parseFloat(localStorage.getItem("ctrTotalAmount"));
+let totalRepair = svcTotalAmount + ctrTotalAmount;
+
+document.addEventListener("DOMContentLoaded", () => {
+    const saveButton = document.getElementById("saveToLogButton");
+    if (saveButton) {
+        saveButton.removeEventListener("click", saveToLog); // 🔹 Limpiar eventos previos
+        saveButton.addEventListener("click", saveToLog); // 🔹 Asignar el evento correctamente
+    }
+});
 function saveToLog() {
-    const resultsBox = document.getElementById('results'); // Referencia al elemento de resultados existente
-    const resultsContent = resultsBox.value.trim(); // Obtener y limpiar el contenido actual
+    const resultsBox = document.getElementById('results'); 
+    const resultsContent = resultsBox.value.trim();
     const now = new Date();
-    const formattedDate = now.toLocaleDateString(); // Fecha (DD/MM/AAAA)
-    const formattedTime = now.toLocaleTimeString(); // Hora (HH:MM AM/PM)
+    const formattedDate = now.toLocaleDateString();
+    const formattedTime = now.toLocaleTimeString();
 
     if (!resultsContent) {
-        alert("There´s nothing to save."); // Evitar guardar si el contenido está vacío
+        alert("There´s nothing to save.");
         return;
     }
 
-    // Lógica para guardar en el log
-    console.log(`Guardando en el log: [${formattedDate} ${formattedTime}] ${resultsContent}`);
-    // Si tienes un backend, aquí puedes integrar la lógica para enviar el contenido, por ejemplo con fetch()
+    // Recuperar valores antes de modificar
+    claimsProcessed = parseInt(localStorage.getItem("claimsProcessed")) || 0;
 
-    // Limpiar el área de resultados después de guardar
-    resultsBox.value = "";
+    if (!localStorage.getItem("firstClaimLock")) {
+        localStorage.setItem("firstClaimLock", "true");
+    } else {
+        claimsProcessed++;
+        localStorage.setItem("claimsProcessed", claimsProcessed);
+    }
 
-    // Refrescar la página y desplazarse hacia arriba suavemente
+    totalTimeSpent = parseFloat(localStorage.getItem("totalTimeSpent")) || 0;
+    totalTimeSpent += timerElapsed; // Acumular tiempo total
+    localStorage.setItem("totalTimeSpent", totalTimeSpent.toFixed(2));
+
+    // Recuperar el log existente antes de modificarlo
+    dailyLog = localStorage.getItem('dailyLog') || "";
+
+    // Generar encabezado con fecha, hora y tiempo del claim
+    const header = `=== ${formattedDate} - ${formattedTime} | Duration: ${timerElapsed.toFixed(2)} seconds ===\n`;
+
+    // Agregar encabezado y contenido del claim al log
+    dailyLog += `${header}${resultsContent}\n\n`;
+
+    // Actualizar el resumen en el log
+    let dailySummary = getDailySummary();
+    if (dailyLog.includes("=== DAILY SUMMARY ===")) {
+        dailyLog = dailyLog.replace(/=== DAILY SUMMARY ===[\s\S]*?======================\n\n/, dailySummary);
+    } else {
+        dailyLog = `${dailySummary}${dailyLog}`;
+    }
+
+    // Guardar el log actualizado
+    localStorage.setItem("dailyLog", dailyLog);
+
+    // Mostrar confirmación visual
+    document.getElementById("saveToLogButton").classList.add('saved');
+    document.getElementById("saveToLogButton").disabled = true;
+    document.getElementById("saveConfirmation").style.display = 'inline';
+    setTimeout(() => document.getElementById("saveConfirmation").style.display = 'none', 2000);
+
+    // Recargar la página
     setTimeout(() => {
-        window.scrollTo({
-            top: 0,
-            behavior: "smooth" // Scroll suave hacia la parte superior
-        });
-        setTimeout(() => location.reload(), 1000); // Refresca la página después de 1 segundo para completar el scroll
-    }, 500); // Espera medio segundo para completar el guardado antes de iniciar el scroll
-
-
-    // Añadir nueva entrada con fecha y hora
-    dailyLog += `=== ${formattedDate} - ${formattedTime} ===\n${resultsContent}\n\n`;
-
-    // Guardar el log en LocalStorage
-    localStorage.setItem('dailyLog', dailyLog);
-
-    console.log("Entrada guardada en el log del día.");
-
-    // Actualizar el estado del botón "Save to Log"
-    const saveButton = document.getElementById('saveToLogButton');
-    saveButton.classList.add('saved');
-    saveButton.disabled = true;
-
-    // Mostrar confirmación visual breve
-    const confirmationMessage = document.getElementById('saveConfirmation');
-    confirmationMessage.style.display = 'inline';
-    setTimeout(() => {
-        confirmationMessage.style.display = 'none';
-    }, 2000);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        setTimeout(() => location.reload(), 1000);
+    }, 500);
 }
+
+
+// Registrar un Comp Quote Request
+function registerCompQuote() {
+    compQuoteRequests = parseInt(localStorage.getItem("compQuoteRequests")) || 0;
+
+    // Incrementar el contador y guardarlo en localStorage
+    compQuoteRequests++;
+    localStorage.setItem("compQuoteRequests", compQuoteRequests);
+
+    console.log(`Comp Quote Request registrado. Total ahora: ${compQuoteRequests}`);
+}
+
+// Registrar una aprobación SVC
+function registerSvcApproval(amount) {
+    svcApprovals = parseInt(localStorage.getItem("svcApprovals")) || 0;
+    svcTotalAmount = parseFloat(localStorage.getItem("svcTotalAmount")) || 0;
+
+    svcApprovals++;
+    svcTotalAmount += parseFloat(amount);
+    totalRepair = svcTotalAmount + ctrTotalAmount;
+
+    localStorage.setItem("svcApprovals", svcApprovals);
+    localStorage.setItem("svcTotalAmount", svcTotalAmount.toFixed(2));
+    localStorage.setItem("totalRepair", totalRepair.toFixed(2));
+}
+
+// Registrar una aprobación CTR
+function registerCtrApproval(amount) {
+    ctrApprovals = parseInt(localStorage.getItem("ctrApprovals")) || 0;
+    ctrTotalAmount = parseFloat(localStorage.getItem("ctrTotalAmount")) || 0;
+
+    ctrApprovals++;
+    ctrTotalAmount += parseFloat(amount);
+    totalRepair = svcTotalAmount + ctrTotalAmount;
+
+    localStorage.setItem("ctrApprovals", ctrApprovals);
+    localStorage.setItem("ctrTotalAmount", ctrTotalAmount.toFixed(2));
+    localStorage.setItem("totalRepair", totalRepair.toFixed(2));
+}
+
+// Llamar estas funciones cuando SVC o CTR sean seleccionados
+document.getElementById("saveToLogButton").addEventListener("click", () => {
+    let svcAmount = parseFloat(document.getElementById("svcSubtotal").textContent.replace(/[^0-9.]/g, '')) || 0;
+    let ctrAmount = parseFloat(document.getElementById("ctrSubtotal").textContent.replace(/[^0-9.]/g, '')) || 0;
+
+    if (svcAmount > ctrAmount) {
+        registerSvcApproval(svcAmount);
+    } else {
+        registerCtrApproval(ctrAmount);
+    }
+});
+
+
+function getDailySummary() {
+    totalTimeSpent = parseFloat(localStorage.getItem("totalTimeSpent")) || 0;
+    claimsProcessed = parseInt(localStorage.getItem("claimsProcessed")) || 0;
+    compQuoteRequests = parseInt(localStorage.getItem("compQuoteRequests")) || 0;
+    svcApprovals = parseInt(localStorage.getItem("svcApprovals")) || 0;
+    svcTotalAmount = parseFloat(localStorage.getItem("svcTotalAmount")) || 0;
+    ctrApprovals = parseInt(localStorage.getItem("ctrApprovals")) || 0;
+    ctrTotalAmount = parseFloat(localStorage.getItem("ctrTotalAmount")) || 0;
+    totalRepair = svcTotalAmount + ctrTotalAmount;
+
+    let averageTime = claimsProcessed > 0 ? (totalTimeSpent / claimsProcessed).toFixed(2) : "0.00";
+
+    return `=== DAILY SUMMARY ===
+Claims processed: ${claimsProcessed}
+Average time per claim: ${averageTime} seconds
+Comp quote requested: ${compQuoteRequests}
+SVC approvals: ${svcApprovals} | Total amount: $${svcTotalAmount.toFixed(2)}
+CTR approvals: ${ctrApprovals} | Total amount: $${ctrTotalAmount.toFixed(2)}
+Total repair: $${totalRepair.toFixed(2)}
+======================\n\n`;
+}
+
 
 // Función para descargar el archivo del log
 function downloadDailyLog() {
@@ -406,10 +538,16 @@ function openLogInBrowser() {
     logWindow.document.close();
 }
 
-// Eventos para los botones
-document.getElementById('saveToLogButton').addEventListener('click', saveToLog);
-document.getElementById('downloadLogButton').addEventListener('click', downloadDailyLog);
-document.getElementById('openLogButton').addEventListener('click', openLogInBrowser);
+// 🔹 EVENTOS PARA LOS BOTONES
+document.addEventListener("DOMContentLoaded", function() {
+    const saveButton = document.getElementById("saveToLogButton");
+    const downloadButton = document.getElementById("downloadLogButton");
+    const openLogButton = document.getElementById("openLogButton");
+
+    if (saveButton) saveButton.addEventListener("click", saveToLog);
+    if (downloadButton) downloadButton.addEventListener("click", downloadDailyLog);
+    if (openLogButton) openLogButton.addEventListener("click", openLogInBrowser);
+});
 
             function updateRepairPercentageWithLOL() {
   const previousRepairs = parseFloat(document.getElementById('previousClaims').value) || 0;
@@ -1494,6 +1632,55 @@ function normalizeString(str) {
     .replace(/\s+/g, ' ') // Reemplazar múltiples espacios por uno solo
     .trim(); // Eliminar espacios al principio y al final
 }
+
+let timerInterval;
+let startTime;
+
+// Iniciar cronómetro cuando se empieza a escribir en Authorization
+document.getElementById("authNumber").addEventListener("input", startTimer);
+
+function startTimer() {
+    if (!startTime) { // Evitar reinicio si ya se inició
+        startTime = performance.now();
+        timerInterval = setInterval(updateTimerDisplay, 1000);
+    }
+}
+
+let timerElapsed = 0; // Variable global para almacenar el tiempo del claim actual
+
+function stopTimer() {
+    if (startTime !== null) {
+        const elapsedTime = (performance.now() - startTime) / 1000; // Convertir a segundos
+        timerElapsed = elapsedTime; // Almacenar el tiempo del claim actual
+
+        totalTimeSpent = parseFloat(localStorage.getItem("totalTimeSpent")) || 0;
+        totalTimeSpent += elapsedTime; // Acumular tiempo total
+        localStorage.setItem("totalTimeSpent", totalTimeSpent.toFixed(2));
+
+        claimsProcessed = parseInt(localStorage.getItem("claimsProcessed")) || 0;
+        claimsProcessed++;
+        localStorage.setItem("claimsProcessed", claimsProcessed);
+
+        clearInterval(timerInterval);
+        timerInterval = null;
+        startTime = null;
+        document.getElementById("timerDisplay").textContent = "00:00"; // Reiniciar la vista
+    }
+}
+
+// Actualizar el cronómetro en pantalla en tiempo real
+function updateTimerDisplay() {
+    if (startTime !== null) {
+        let elapsedTime = Math.floor((performance.now() - startTime) / 1000);
+        let minutes = Math.floor(elapsedTime / 60);
+        let seconds = elapsedTime % 60;
+        document.getElementById("timerDisplay").textContent = 
+            `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }
+}
+
+// Asegurar que se detiene correctamente cuando guardamos el claim
+document.getElementById("saveToLogButton").addEventListener("click", stopTimer);
           </script>
     </body>
     </html>                                

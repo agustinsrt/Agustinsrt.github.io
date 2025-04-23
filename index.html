@@ -56,6 +56,16 @@
   <div class="container">
     <h2>Repair Evaluator</h2>
 
+    <div id="agent-selection">
+      <label for="agentNameDropdown">Select Agent:</label>
+      <select id="agentNameDropdown" onchange="saveSelectedAgent()">
+          <option value="">--Select--</option>
+          <option value="Agustin">Agustin</option>
+          <option value="Victoria">Victoria</option>
+          <option value="Lorena">Lorena</option>
+      </select>
+  </div>
+
     <!-- Authorization Number -->
     
     <div class="compact flex">
@@ -227,7 +237,7 @@
 <!-- Button to calculate LOL percentage -->
 <div class="compact">
   <button class="orange" onclick="calculateLOLPercentage()">Process</button> 
-  <button class="orange" onclick="updateTableOnButtonClick(); sendCompQuoteEmail(); registerCompQuote();" style="margin-top: 20px;">Request Comp Quote</button>
+  <button class="orange" onclick="updateTableOnButtonClick(); clearDateCompletedOnCompRequest(); clearDoneOnCompRequest(); sendCompQuoteEmail(); registerCompQuote();" style="margin-top: 20px;">Request Comp Quote</button>
   <label for="svcEmail">SVC Email:</label>
   <input type="email" id="svcEmail" placeholder="Enter SVC email" style="width: 185px">
 </div>
@@ -289,6 +299,18 @@
 </table>
 
 <script>
+
+
+function saveSelectedAgent() {
+    const selectedAgent = document.getElementById("agentNameDropdown").value;
+    if (selectedAgent) {
+        localStorage.setItem("selectedAgent", selectedAgent);
+        alert(`Agent ${selectedAgent} selected and will stay active!`);
+    }
+}
+function getSelectedAgent() {
+    return localStorage.getItem("selectedAgent") || ""; // Recupera el agente o devuelve vacío si no hay selección
+}
 
 function openPopup(url, title) {
   // Configuración de la ventana emergente
@@ -366,30 +388,21 @@ function saveToLog() {
         return;
     }
 
-    // Recuperar valores antes de modificar
+    // Recuperar y actualizar claims procesados
     claimsProcessed = parseInt(localStorage.getItem("claimsProcessed")) || 0;
+    claimsProcessed++;
+    localStorage.setItem("claimsProcessed", claimsProcessed);
 
-    if (!localStorage.getItem("firstClaimLock")) {
-        localStorage.setItem("firstClaimLock", "true");
-    } else {
-        claimsProcessed++;
-        localStorage.setItem("claimsProcessed", claimsProcessed);
-    }
-
-    totalTimeSpent = parseFloat(localStorage.getItem("totalTimeSpent")) || 0;
-    totalTimeSpent += timerElapsed; // Acumular tiempo total
-    localStorage.setItem("totalTimeSpent", totalTimeSpent.toFixed(2));
-
-    // Recuperar el log existente antes de modificarlo
+    // Recuperar el log antes de modificarlo
     dailyLog = localStorage.getItem('dailyLog') || "";
 
-    // Generar encabezado con fecha, hora y tiempo del claim
+    // Generar encabezado con fecha, hora y duración
     const header = `=== ${formattedDate} - ${formattedTime} | Duration: ${timerElapsed.toFixed(2)} seconds ===\n`;
 
-    // Agregar encabezado y contenido del claim al log
+    // Agregar contenido al log
     dailyLog += `${header}${resultsContent}\n\n`;
 
-    // Actualizar el resumen en el log
+    // 🔹 Generar y agregar el resumen del día
     let dailySummary = getDailySummary();
     if (dailyLog.includes("=== DAILY SUMMARY ===")) {
         dailyLog = dailyLog.replace(/=== DAILY SUMMARY ===[\s\S]*?======================\n\n/, dailySummary);
@@ -397,7 +410,7 @@ function saveToLog() {
         dailyLog = `${dailySummary}${dailyLog}`;
     }
 
-    // Guardar el log actualizado
+    // Guardar log actualizado
     localStorage.setItem("dailyLog", dailyLog);
 
     // Mostrar confirmación visual
@@ -412,8 +425,6 @@ function saveToLog() {
         setTimeout(() => location.reload(), 1000);
     }, 500);
 }
-
-
 // Registrar un Comp Quote Request
 function registerCompQuote() {
     compQuoteRequests = parseInt(localStorage.getItem("compQuoteRequests")) || 0;
@@ -467,7 +478,7 @@ document.getElementById("saveToLogButton").addEventListener("click", () => {
 
 
 function getDailySummary() {
-    totalTimeSpent = parseFloat(localStorage.getItem("totalTimeSpent")) || 0;
+    const selectedAgent = localStorage.getItem("selectedAgent") || "Unknown Agent"; // Recuperar nombre del agente
     claimsProcessed = parseInt(localStorage.getItem("claimsProcessed")) || 0;
     compQuoteRequests = parseInt(localStorage.getItem("compQuoteRequests")) || 0;
     svcApprovals = parseInt(localStorage.getItem("svcApprovals")) || 0;
@@ -476,18 +487,15 @@ function getDailySummary() {
     ctrTotalAmount = parseFloat(localStorage.getItem("ctrTotalAmount")) || 0;
     totalRepair = svcTotalAmount + ctrTotalAmount;
 
-    let averageTime = claimsProcessed > 0 ? (totalTimeSpent / claimsProcessed).toFixed(2) : "0.00";
-
     return `=== DAILY SUMMARY ===
+Agent: ${selectedAgent}
 Claims processed: ${claimsProcessed}
-Average time per claim: ${averageTime} seconds
 Comp quote requested: ${compQuoteRequests}
 SVC approvals: ${svcApprovals} | Total amount: $${svcTotalAmount.toFixed(2)}
 CTR approvals: ${ctrApprovals} | Total amount: $${ctrTotalAmount.toFixed(2)}
 Total repair: $${totalRepair.toFixed(2)}
 ======================\n\n`;
 }
-
 
 // Función para descargar el archivo del log
 function downloadDailyLog() {
@@ -586,12 +594,29 @@ document.addEventListener("DOMContentLoaded", function() {
   }
 }
 
-// Ejecutar la lógica al cargar la página para sincronizar estado inicial
 window.onload = function () {
-  toggleField('mileageCost', 'noMileage');
-  toggleField('rrCost', 'noRR');
-  updateTotals(); // Actualizar los cálculos
-}
+    // Ejecutar las funciones existentes
+    toggleField('mileageCost', 'noMileage');
+    toggleField('rrCost', 'noRR');
+    updateTotals(); // Actualizar los cálculos
+
+    // Nueva lógica para preseleccionar el agente
+    const selectedAgent = localStorage.getItem("selectedAgent"); // Recuperar agente seleccionado
+    const agentDropdown = document.getElementById("agentNameDropdown"); // Referencia al dropdown
+
+    if (selectedAgent) {
+        // Preseleccionar el agente en el dropdown
+        agentDropdown.value = selectedAgent;
+
+        // Cambiar el texto de "--Select--"
+        const defaultOption = agentDropdown.querySelector('option[value=""]');
+        if (defaultOption) {
+            defaultOption.textContent = `Selected: ${selectedAgent}`; // Cambiar el texto
+        }
+    }
+};
+
+
 
 
 function updateRepairPercentage() {
@@ -1336,18 +1361,19 @@ function updateTable() {
     rowRegistry[authValue] = newRow; // Registrar nueva fila en el objeto
 
     // Lista de valores para la fila
+    const agentName = localStorage.getItem("selectedAgent") || ""; // Recuperar agente seleccionado
     const cellValues = [
         authValue.slice(0, 7),  // SP Number RFA
         "",                     // Date RFA Submitted
         new Date().toLocaleDateString(),  // Date Assigned to Agent
-        "",                     // Agent Name
+        agentName,              // Agent Name (rellenado automáticamente)
         "",                     // Status
         authValue.slice(-5),    // Authorization
         new Date().toLocaleDateString(),  // Current Date
         svcValue,               // SVC Name
         "",                     // Comments
         "",                     // Req Comp
-        "",                     // Date Completed
+        "T",                    // Date Completed
         "NO",                   // Push Back (Asegurado)
         "",                     // Reason
         "0",                    // Times Push Back precargado
@@ -1355,8 +1381,10 @@ function updateTable() {
         ctrTotalValue,          // CTR Cost
         differenceValue,        // Difference calculado
         "",                     // Amount Approved (en blanco por defecto)
-        ""                      // Done
+        "true"                      // Done
     ];
+
+
 
     // Crear celdas con inputs editables
     cellValues.forEach((value, index) => {
@@ -1432,6 +1460,35 @@ copyTableButton.addEventListener('click', function () {
 authInput.addEventListener('blur', updateTable);
 svcInput.addEventListener('blur', updateTable);
 
+function clearDateCompletedOnCompRequest() {
+    const rows = document.querySelectorAll("#dataTable tbody tr");
+
+    rows.forEach(row => {
+        const dateCompletedCell = row.querySelector("td:nth-child(11) input"); // Date Completed
+
+        // ✅ Eliminar "T" si existe
+        if (dateCompletedCell && dateCompletedCell.value.trim() === "T") {
+            dateCompletedCell.value = ""; // Dejar vacío al solicitar el comp
+        }
+    });
+
+    console.log("✅ 'Date Completed' eliminado (vacío) al solicitar el comp.");
+}
+
+function clearDoneOnCompRequest() {
+    const rows = document.querySelectorAll("#dataTable tbody tr");
+
+    rows.forEach(row => {
+        const doneCell = row.querySelector("td:nth-child(19) input"); // Done
+
+        // ✅ Si Done es "true", eliminarlo cuando se solicita el comp
+        if (doneCell && doneCell.value.trim() === "true") {
+            doneCell.value = ""; // Vacío al solicitar el comp
+        }
+    });
+
+    console.log("✅ 'Done' borrado en todas las filas al solicitar el comp.");
+}
 
 function updateTableOnButtonClick() {
     const rows = document.querySelectorAll("#dataTable tbody tr");
@@ -1439,6 +1496,7 @@ function updateTableOnButtonClick() {
     rows.forEach(row => {
         const reqCompCell = row.querySelector("td:nth-child(10) input[type='text']"); // Req Comp
         const commentsCell = row.querySelector("td:nth-child(9) input"); // Comments
+        const statusCell = row.querySelector("td:nth-child(5) input"); // Status
         const doneCell = row.querySelector("td:nth-child(19) input"); // Done
 
         // Bandera de modificación
@@ -1456,13 +1514,19 @@ function updateTableOnButtonClick() {
             rowModified = true; // Marcamos que hubo modificación
         }
 
-        // ✅ Done: Queda vacío si hubo modificaciones, "true" por default si no
+        // ✅ Status: Si está vacío, asignamos "Comp Quote -Pending"
+        if (statusCell && statusCell.value.trim() === "") {
+            statusCell.value = "Comp Quote -Pending";
+            rowModified = true; // Marcamos que hubo modificación
+        }
+
+        // ✅ Done: Queda vacío si hubo modificaciones, "true" por defecto si no
         if (doneCell) {
             doneCell.value = rowModified ? "" : "true"; // Aplicamos lógica inversa
         }
     });
 
-    console.log("✅ Todas las filas fueron procesadas correctamente.");
+    console.log("✅ Todas las filas fueron procesadas correctamente con 'Comp Quote - Pending' en Status.");
 }
 
           
@@ -1640,9 +1704,10 @@ let startTime;
 document.getElementById("authNumber").addEventListener("input", startTimer);
 
 function startTimer() {
-    if (!startTime) { // Evitar reinicio si ya se inició
+    if (!startTime) { // Evitar reinicio si ya está corriendo
         startTime = performance.now();
         timerInterval = setInterval(updateTimerDisplay, 1000);
+        localStorage.removeItem("currentClaimSaved"); // Resetear el bloqueo para el nuevo claim
     }
 }
 
@@ -1651,15 +1716,27 @@ let timerElapsed = 0; // Variable global para almacenar el tiempo del claim actu
 function stopTimer() {
     if (startTime !== null) {
         const elapsedTime = (performance.now() - startTime) / 1000; // Convertir a segundos
-        timerElapsed = elapsedTime; // Almacenar el tiempo del claim actual
+        timerElapsed = elapsedTime; // Guardar el tiempo del claim actual
 
+        console.log(`Tiempo registrado para claim actual: ${timerElapsed} segundos`);
+
+        // Recuperar tiempo acumulado y claims procesados
         totalTimeSpent = parseFloat(localStorage.getItem("totalTimeSpent")) || 0;
-        totalTimeSpent += elapsedTime; // Acumular tiempo total
-        localStorage.setItem("totalTimeSpent", totalTimeSpent.toFixed(2));
+        const claimsProcessed = parseInt(localStorage.getItem("claimsProcessed")) || 0;
 
-        claimsProcessed = parseInt(localStorage.getItem("claimsProcessed")) || 0;
-        claimsProcessed++;
-        localStorage.setItem("claimsProcessed", claimsProcessed);
+        // Validar y bloquear duplicaciones explícitamente
+        if (!sessionStorage.getItem("firstClaimHandled") && claimsProcessed === 0) {
+            // Primer claim: Registramos directamente el tiempo
+            totalTimeSpent = timerElapsed;
+            sessionStorage.setItem("firstClaimHandled", "true");
+        } else {
+            // Claims posteriores: Acumular tiempo normalmente
+            totalTimeSpent += timerElapsed;
+        }
+
+        // Guardar tiempo acumulado
+        localStorage.setItem("totalTimeSpent", totalTimeSpent.toFixed(2));
+        console.log(`Tiempo total acumulado actualizado: ${totalTimeSpent}`);
 
         clearInterval(timerInterval);
         timerInterval = null;
@@ -1667,6 +1744,7 @@ function stopTimer() {
         document.getElementById("timerDisplay").textContent = "00:00"; // Reiniciar la vista
     }
 }
+
 
 // Actualizar el cronómetro en pantalla en tiempo real
 function updateTimerDisplay() {

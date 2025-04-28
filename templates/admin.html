@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <title>Admin Panel</title>
+  
+</head>
+<body>
+  <h1>Admin Panel</h1>
+  <form id="configForm">
+    <label for="lessThanOneYearPercentage">Less Than One Year Percentage:</label>
+    <input type="number" id="lessThanOneYearPercentage" value="70" min="0" max="100" step="1" required>
+    
+    <label for="moreThanOneYearPercentage">More Than One Year Percentage:</label>
+    <input type="number" id="moreThanOneYearPercentage" value="60" min="0" max="100" step="1" required>
+
+    <button type="button" id="saveConfig">Save Configuration</button>
+  </form>
+
+  <h2>Create User</h2>
+<form id="create-user-form">
+    <input type="text" name="username" placeholder="Username" required>
+    <input type="password" name="password" placeholder="Password" required>
+    <select name="role" required>
+        <option value="admin">Admin</option>
+        <option value="agent">Agent</option>
+    </select>
+    <button type="submit">Create User</button>
+</form>
+
+<h2>Delete User</h2>
+<form id="delete-user-form">
+    <select id="user-dropdown" name="username" required>
+        <option value="" disabled selected>Select a user</option>
+    </select>
+    <button type="submit">Delete User</button>
+</form>
+
+  <script>
+    // Obtener y guardar configuraciones en el backend
+    document.getElementById("saveConfig").addEventListener("click", function () {
+      const lessThanOneYearPercentage = document.getElementById("lessThanOneYearPercentage").value;
+      const moreThanOneYearPercentage = document.getElementById("moreThanOneYearPercentage").value;
+
+      fetch("http://localhost:5000/config", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          lessThanOneYearPercentage: lessThanOneYearPercentage,
+          moreThanOneYearPercentage: moreThanOneYearPercentage
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        alert("Configuration saved successfully!");
+        console.log("Server Response:", data);
+      })
+      .catch(error => console.error("Error saving configuration:", error));
+    });
+
+        // Crear Usuario
+    document.getElementById('create-user-form').addEventListener('submit', function(event) {
+        event.preventDefault();
+        
+        const formData = new FormData(event.target);
+        const data = {
+            username: formData.get('username'),
+            password: formData.get('password'),
+            role: formData.get('role')
+        };
+
+        fetch('/create_user', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert(data.message || data.error);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    });
+
+    // Eliminar Usuario
+    document.getElementById('delete-user-form').addEventListener('submit', function(event) {
+        event.preventDefault();
+        
+        const formData = new FormData(event.target);
+        const data = { username: formData.get('username') };
+
+        fetch('/delete_user', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert(data.message || data.error);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    });
+
+
+    // Cargar usuarios en el dropdown
+    document.addEventListener('DOMContentLoaded', function() {
+        fetch('/get_users')
+            .then(response => response.json())
+            .then(users => {
+                const dropdown = document.getElementById('user-dropdown');
+                users.forEach(user => {
+                    const option = document.createElement('option');
+                    option.value = user;
+                    option.textContent = user;
+                    dropdown.appendChild(option);
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching users:', error);
+                alert('Failed to load users.');
+            });
+    });
+
+    // Manejar la eliminación de usuarios
+    document.getElementById('delete-user-form').addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        const username = document.getElementById('user-dropdown').value;
+
+        fetch('/delete_user', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username })
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert(data.message || data.error);
+
+            // Actualizar el dropdown después de eliminar
+            if (data.message) {
+                const dropdown = document.getElementById('user-dropdown');
+                const optionToRemove = Array.from(dropdown.options).find(option => option.value === username);
+                if (optionToRemove) dropdown.removeChild(optionToRemove);
+            }
+        })
+        .catch(error => {
+            console.error('Error deleting user:', error);
+            alert('Failed to delete user.');
+        });
+    });
+
+  </script>
+</body>
+</html>

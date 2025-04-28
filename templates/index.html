@@ -1,0 +1,1828 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Repair Evaluator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  </head>
+<body>
+
+  <div id="timerDisplay" style="
+    position: fixed;
+    bottom: 10px;
+    right: 10px;
+    background: #222;
+    color: #fff;
+    padding: 5px 10px;
+    font-size: 14px;
+    border-radius: 5px;
+    opacity: 0.8;
+">00:00</div>
+
+
+<div class="floating-menu">
+  <button class="orange">Resources</button>
+  <div class="dropdown-content">
+      <a href="#" onclick="openPopup('{{ url_for('tax_exemptions') }}', 'Tax Ex')">Tax Exemptions</a>
+      <a href="#" onclick="openPopup('{{ url_for('extended_coverage') }}', 'MFG Extended Coverage')">MFG Extended Coverage</a>
+      <a href="#" onclick="openPopup('{{ url_for('email_templates') }}', 'Email Templates')">Email Templates</a>
+      <a href="#" onclick="openPopup('{{ url_for('state_abbreviations') }}', 'State Abbreviations')">State Abbreviations</a>
+      <a href="#" onclick="openPopup('{{ url_for('phone_directory') }}', 'Phone Directory')">Phone Directory</a>
+      <a href="#" onclick="openPopup('{{ url_for('calculator') }}', 'Calculator')">Calculator</a>
+        
+      <!-- Menú Secundario -->
+      <div class="dropdown-submenu">
+        <a href="#">External Sites ▸</a>
+        <div class="submenu-content">
+          <a href="https://www.encompass.com" target="_blank">Encompass</a>
+          <a href="https://my.servicepower.com/" target="_blank">Service Power</a>
+          <a href="https://app.smartsheet.com/b/home?dlp=%2Fsheets%2FMrcwvQwxjwxgrRpJcwGqQVGqHxjgw5c8H9fgfXv1&dlq=view%3Dgrid" target="_blank">Claims Smartsheet</a>
+          <a href="https://app.smartsheet.com/sheets/mH8xqc99V2w7jrMRMXqhPJjM5jfjjcr4hjwfh431" target="_blank">RFA Smartsheet</a>
+        </div>
+      </div>
+    </div>
+  </div>
+    
+  
+    </div>
+  </div>
+  
+  
+
+  <div class="container">
+    <h2>Repair Evaluator</h2>
+
+    <div id="agent-info">
+      <p>Agent: <span id="agentName"></span></p>
+  </div>
+
+    <!-- Authorization Number -->
+    
+    <div class="compact flex">
+      <label for="authNumber">Authorization :</label>
+      <input type="text" id="authNumber" placeholder="Enter Authorization Number" maxlength="13" oninput="formatAuthNumber()" style="width: 200px">
+
+      <button class="orange" onclick="openContract()">T&C</button>
+    </div>
+    
+
+    <!-- General Inputs -->
+    <div class="compact flex">
+  <label for="svcName">SVC Name:</label>
+  <input type="text" id="svcName" placeholder="Enter SVC Name"  style="width: 300px">
+  <button class="orange" onclick="getSVCInfo()">Search SVC</button> <!-- Botón para buscar SVC -->
+</div>
+
+    <div class="compact flex">
+      <label for="model" >Model:</label>
+      <input type="text" id="model" placeholder="Enter Model" style="width: 200px">
+      <button class="orange" onclick="searchModel()">Search</button>
+    </div>
+
+    <div class="compact flex" style="margin-bottom: 10px;">
+      <label for="serial">Serial:</label>
+      <input type="text" id="serial" placeholder="Enter Serial" style="width: 200px">
+    </div>
+
+    <div class="compact" style="margin-bottom: 10px;">
+      <label>Physical Damage:</label>
+      <input type="radio" name="physicalDamage" value="yes"> Yes
+      <input type="radio" name="physicalDamage" value="no" checked> No <!-- 🔹 Marcamos "No" por defecto -->
+  </div>
+
+    <div class="compact">
+      <label for="complaint">Complaint:</label>
+      <textarea id="complaint" style="width: 100%; height: 50px;" placeholder="Describe the complaint"></textarea>
+    </div>
+
+    <div class="compact">
+      <label for="techDiag">Tech's Diag:</label>
+      <textarea id="techDiag" style="width: 100%; height: 75px;" placeholder="Enter tech's diagnosis"></textarea>
+    </div>
+
+    <!-- Actions Section --> 
+    <div class="actions">
+          </div>
+        <!-- SVC Section -->
+<h3>SVC Estimate</h3>
+
+<div style="margin-bottom: 10px;">
+  <label for="laborCost" style="min-width: 100px;">Labor Cost:</label>
+  <input type="number" id="laborCost" placeholder="Enter labor cost" style="width: 150px" oninput="updateTotals()" min="0">
+</div>
+
+<div style="margin-bottom: 10px;">
+  <label for="mileageCost" style="min-width: 100px;">Mileage Cost:</label>
+  <input type="number" id="mileageCost" maxlength="12" placeholder="Enter mileage cost" style="width: 150px" oninput="updateTotals()" min="0">
+  <label style="margin-left: 10px;">
+    <input type="checkbox" id="noMileage" checked onchange="toggleField('mileageCost', 'noMileage')"> No Mileage
+  </label>
+</div>
+
+<div style="margin-bottom: 10px;">
+  <label for="rrCost" style="min-width: 100px;">R&R:</label>
+  <input type="number" id="rrCost" maxlength="12" placeholder="Enter R&R cost" style="width: 150px" oninput="updateTotals()" min="0">
+  <label style="margin-left: 10px;">
+    <input type="checkbox" id="noRR" checked onchange="toggleField('rrCost', 'noRR')"> No R&R
+  </label>
+</div>
+
+
+<div style="display: flex; gap: 10px; align-items: center;">
+  <button class="orange" onclick="addRow('svc')">Add SVC Part</button>
+  <button class="orange" onclick="addSVCTaxes()">Add Taxes</button> <!-- Botón agregado -->
+  <button class="orange" onclick="window.open('/static/TAX EX.PNG', '_blank', 'width=800,height=600')">View Tax Exemptions</button>
+</div>
+
+<table id="svcTable">
+  <thead>
+    <tr>
+      <th>Part Cost</th>
+      <th>Qty</th>
+      <th>Total Cost</th>
+      <th>Part Number</th>
+      <th>Part Name</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><input type="number" placeholder="Cost" style="width: 90%;" oninput="updateTotals()" min="0"></td>
+      <td><input type="number" placeholder="Qty" style="width: 50px;" oninput="updateTotals()" min="1" max="99" value="1"></td>
+      <td><input type="number" placeholder="Total Cost" style="width: 90%;" readonly></td>
+      <td><input type="text" placeholder="Number" style="width: 90%;"></td>
+      <td><input type="text" placeholder="Name" style="width: 90%;"></td>
+      <td style="display: flex; gap: 5px; justify-content: flex-start;">
+        <button class="orange" onclick="searchEncompass(this)">Encompass</button>
+        <button class="dark-gray" onclick="deleteRow(this)">Delete</button>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<p class="subtotal" id="svcSubtotal">$0.00   SVC TOTAL <span id="svcPartsBreakdown">($0.00 parts)</span></p>
+<!-- CTR Section -->
+<h3>CTR Estimate</h3>
+<div style="display: flex; gap: 10px; align-items: center;">
+    <button class="orange" onclick="addRow('ctr')">Add CTR Part</button>
+    <button class="orange" onclick="addShippingHandling()">Add S&H</button>
+    <button class="orange" onclick="addTaxes()">Add Taxes</button> <!-- Botón de Taxes -->
+</div>
+<table id="ctrTable">
+  <thead>
+    <tr>
+      <th>Part Cost</th>
+      <th>Qty</th>
+      <th>Total Cost</th>
+      <th>Part Number</th>
+      <th>Part Name</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    <!-- Aquí se agregarán las filas dinámicamente -->
+  </tbody>
+</table>
+<p class="subtotal" id="ctrSubtotal">$0.00   CTR TOTAL <span id="ctrPartsBreakdown">($0.00 parts)</span></p>
+
+        <!-- LOL Section -->
+<div class="compact">
+  <label>LOL:</label>
+  <input type="radio" name="lolType" value="FV"> FV
+  <input type="radio" name="lolType" value="FV-C"> FV-C
+</div>
+
+<div class="compact">
+  <label for="applianceValue">LOL $ :</label>
+  <input type="number" id="applianceValue" placeholder="Enter appliance value" aria-label="Enter the appliance value" min="0" oninput="updateRepairPercentageWithLOL()">
+</div>
+
+<div class="compact">
+  <label for="previousClaims">Previous Claims:</label>
+  <input type="number" id="previousClaims" placeholder="Enter previous claims" 
+         aria-label="Enter the number of previous claims" min="0" step="0.01" 
+         value="" oninput="updateRepairPercentageWithLOL()">
+</div>
+
+<div class="compact" style="display: flex; align-items: center; gap: 10px;">
+  <label>% Repairs:</label>
+  <p id="repairResults" style="margin: 0;"></p>
+</div>
+
+<div class="compact">
+  <label for="expirationDate">Expiration Date:</label>
+  <input type="text" id="expirationDate" placeholder="MMDDYY" maxlength="8" oninput="formatExpirationDate()" style="width: 100px;">
+  <p id="remainingMonths" style="white-space: nowrap; width: 100px; margin: 0;"></p>
+</div>
+
+<!-- MFG Coverage -->
+<div class="compact"  style="margin-top: 10px;">
+  <label for="mfgCoverage">MFG Coverage:</label>
+  <input type="checkbox" id="noMfgCoverage" onchange="toggleField('mfgCoverage', 'noMfgCoverage')"> No Additional MFG Coverage
+</div>
+<textarea id="mfgCoverage" style="height: 60px; width: 100%" placeholder="Enter additional mfg coverage"></textarea>
+
+
+
+<!-- Button to calculate LOL percentage -->
+<div class="compact">
+  <button class="orange" onclick="calculateLOLPercentage()">Process</button> 
+  <button class="orange" onclick="updateTableOnButtonClick(); clearDateCompletedOnCompRequest(); clearDoneOnCompRequest(); sendCompQuoteEmail(); registerCompQuote();" style="margin-top: 20px;">Request Comp Quote</button>
+  <label for="svcEmail">SVC Email:</label>
+  <input type="email" id="svcEmail" placeholder="Enter SVC email" style="width: 185px">
+</div>
+
+<!-- Results Section -->
+<div id="lolResults" style="margin-top: 20px;">
+  <!-- Results for LOL Percentage and recommendations will appear here -->
+</div>
+           
+                                
+          <!-- Final Recommendation -->
+          <h3>Final Recommendation</h3>
+          <textarea id="finalRecommendation" style="height: 100px; width: 100%" placeholder="Enter final recommendation"></textarea>
+      
+          <!-- Show Results -->
+          <h3>Results</h3>
+          <button class="orange" onclick="showResults()">Show Results</button>
+          <textarea id="results" style="width: 100%; border: 1px solid #ccc; padding: 10px;"></textarea>
+
+                             <!-- Botón para copiar al portapapeles -->
+
+                             <button id="copyButton" class="orange" onclick="copyToClipboard()">Copy to Clipboard</button>
+
+<button class="orange" id="saveToLogButton">Save and New</button>
+<span id="saveConfirmation" style="display: none; color: green; margin-left: 10px;">Saved!</span>
+<button class="orange" id="downloadLogButton">Download Log</button>
+<button class="orange" id="openLogButton">Open Log</button>
+<button class="orange" id="copyTableButton">Copy to RFA SS </button>
+</div>
+
+<!-- Tabla oculta para almacenar los datos -->
+<table id="dataTable" style="display: none;">
+<thead>
+    <tr>
+        <th>SP Number RFA</th>
+        <th>Date RFA Submitted</th>
+        <th>Date Assigned to Agent</th>
+        <th>Agent Name</th>
+        <th>Status</th>
+        <th>Authorization</th>
+        <th>Current Date</th>
+        <th>SVC Name</th>
+        <th>Comments</th>
+        <th>Req Comp</th>
+        <th>Date Completed</th>
+        <th>Push Back</th>
+        <th>Reason</th>
+        <th>Times Push Back</th>
+        <th>SVC Cost</th>
+        <th>CTR Cost</th>
+        <th>Difference</th>
+        <th>Amount Approved</th>
+        <th>Done</th>
+    </tr>
+</thead>
+<tbody>
+    <!-- Aquí se agregarán las filas dinámicamente -->
+</tbody>
+</table>
+
+
+<script>
+// Inicializar variables clave al cargar la página
+let currentLogDate = new Date().toLocaleDateString(); // Fecha actual
+let savedLogDate = localStorage.getItem('currentLogDate') || ""; // Fecha guardada previamente
+let dailyLog = localStorage.getItem('dailyLog') || ""; // Log acumulado guardado previamente
+
+// Verificar si ha cambiado el día al cargar la página
+if (currentLogDate !== savedLogDate) {
+    dailyLog = ""; // Reinicia el log si el día ha cambiado
+    localStorage.setItem('dailyLog', dailyLog); // Guardar el nuevo log vacío en LocalStorage
+    localStorage.setItem('currentLogDate', currentLogDate); // Guardar la nueva fecha actual en LocalStorage
+    console.log("El log fue reiniciado automáticamente al cargar la página.");
+}
+
+// Inicializar valores con verificación en LocalStorage
+const initializeStorage = (key, defaultValue) => {
+    if (localStorage.getItem(key) === null) {
+        localStorage.setItem(key, defaultValue);
+    }
+};
+
+// Inicializar las variables necesarias
+initializeStorage("totalTimeSpent", "0");
+initializeStorage("claimsProcessed", "0");
+initializeStorage("compQuoteRequests", "0");
+initializeStorage("svcApprovals", "0");
+initializeStorage("svcTotalAmount", "0");
+initializeStorage("ctrApprovals", "0");
+initializeStorage("ctrTotalAmount", "0");
+
+// Variables globales acumulativas
+let totalTimeSpent = parseFloat(localStorage.getItem("totalTimeSpent"));
+let claimsProcessed = parseInt(localStorage.getItem("claimsProcessed"));
+let compQuoteRequests = parseInt(localStorage.getItem("compQuoteRequests"));
+let svcApprovals = parseInt(localStorage.getItem("svcApprovals"));
+let svcTotalAmount = parseFloat(localStorage.getItem("svcTotalAmount"));
+let ctrApprovals = parseInt(localStorage.getItem("ctrApprovals"));
+let ctrTotalAmount = parseFloat(localStorage.getItem("ctrTotalAmount"));
+let totalRepair = svcTotalAmount + ctrTotalAmount;    
+
+window.onload = function () {
+    // Ejecutar las funciones existentes
+    toggleField('mileageCost', 'noMileage');
+    toggleField('rrCost', 'noRR');
+    updateTotals(); // Actualizar los cálculos
+
+    
+};
+
+// 🔹 EVENTOS PARA LOS BOTONES
+document.addEventListener("DOMContentLoaded", function() {
+    const saveButton = document.getElementById("saveToLogButton");
+    const downloadButton = document.getElementById("downloadLogButton");
+    const openLogButton = document.getElementById("openLogButton");
+
+    if (saveButton) saveButton.addEventListener("click", saveToLog);
+    if (downloadButton) downloadButton.addEventListener("click", downloadDailyLog);
+    if (openLogButton) openLogButton.addEventListener("click", openLogInBrowser);
+});
+
+let timerInterval;
+let startTime;
+
+// Iniciar cronómetro cuando se empieza a escribir en Authorization
+document.getElementById("authNumber").addEventListener("input", startTimer);
+
+function loadAgentInfo() {
+    // Llama al servidor para obtener el nombre del agente
+    fetch('/get_agent_info')
+        .then(response => response.json())
+        .then(agentData => {
+            const agentNameElement = document.getElementById("agentName");
+            agentNameElement.textContent = agentData.name || "Unknown Agent"; // Actualiza dinámicamente el nombre
+        })
+        .catch(error => {
+            console.error("Error fetching agent info:", error);
+        });
+}
+
+// Ejecutar la función al cargar la página
+document.addEventListener("DOMContentLoaded", loadAgentInfo);
+
+function startTimer() {
+    if (!startTime) { // Evitar reinicio si ya está corriendo
+        startTime = performance.now();
+        timerInterval = setInterval(updateTimerDisplay, 1000);
+        localStorage.removeItem("currentClaimSaved"); // Resetear el bloqueo para el nuevo claim
+    }
+}
+
+let timerElapsed = 0; // Variable global para almacenar el tiempo del claim actual
+
+function stopTimer() {
+    if (startTime !== null) {
+        const elapsedTime = (performance.now() - startTime) / 1000; // Convertir a segundos
+        timerElapsed = elapsedTime; // Guardar el tiempo del claim actual
+
+        console.log(`Tiempo registrado para claim actual: ${timerElapsed} segundos`);
+
+        // Recuperar tiempo acumulado y claims procesados
+        totalTimeSpent = parseFloat(localStorage.getItem("totalTimeSpent")) || 0;
+        const claimsProcessed = parseInt(localStorage.getItem("claimsProcessed")) || 0;
+
+        // Validar y bloquear duplicaciones explícitamente
+        if (!sessionStorage.getItem("firstClaimHandled") && claimsProcessed === 0) {
+            // Primer claim: Registramos directamente el tiempo
+            totalTimeSpent = timerElapsed;
+            sessionStorage.setItem("firstClaimHandled", "true");
+        } else {
+            // Claims posteriores: Acumular tiempo normalmente
+            totalTimeSpent += timerElapsed;
+        }
+
+        // Guardar tiempo acumulado
+        localStorage.setItem("totalTimeSpent", totalTimeSpent.toFixed(2));
+        console.log(`Tiempo total acumulado actualizado: ${totalTimeSpent}`);
+
+        clearInterval(timerInterval);
+        timerInterval = null;
+        startTime = null;
+        document.getElementById("timerDisplay").textContent = "00:00"; // Reiniciar la vista
+    }
+}
+
+// Actualizar el cronómetro en pantalla en tiempo real
+function updateTimerDisplay() {
+    if (startTime !== null) {
+        let elapsedTime = Math.floor((performance.now() - startTime) / 1000);
+        let minutes = Math.floor(elapsedTime / 60);
+        let seconds = elapsedTime % 60;
+        document.getElementById("timerDisplay").textContent = 
+            `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }
+}
+
+// Asegurar que se detiene correctamente cuando guardamos el claim
+document.getElementById("saveToLogButton").addEventListener("click", stopTimer);
+
+function openPopup(url, title) {
+  // Configuración de la ventana emergente
+  const width = 800;  // Ancho de la ventana
+  const height = 600; // Altura de la ventana
+  const left = (window.screen.width - width) / 2; // Centrar horizontalmente
+  const top = (window.screen.height - height) / 2; // Centrar verticalmente
+
+  // Abrir la ventana emergente
+  const popup = window.open(url, title, `width=${width},height=${height},top=${top},left=${left},resizable=yes,scrollbars=yes`);
+
+  // Verificar que la ventana se abrió correctamente
+  if (!popup) {
+    alert("No se pudo abrir la ventana del recurso. Verifica los permisos del navegador.");
+  }
+}
+
+
+
+function formatAuthNumber() {
+
+function openContract() {
+  const authNumber = document.getElementById('authNumber').value; // Obtén el valor del campo Authorization Number
+
+  if (authNumber && authNumber.length >= 7) {
+    const firstSevenChars = authNumber.slice(0, 7); // Toma los primeros 7 caracteres
+    const url = `http://www.bankerswarrantygroup.com/WebServices/TandCWeb/PopupTandC.aspx?P=${encodeURIComponent(firstSevenChars)}`;
+    
+    // Abrir el vínculo en una nueva ventana con dimensiones específicas
+    window.open(url, '_blank', 'width=800,height=600,resizable=yes');
+  } else {
+    alert("Por favor, ingresa al menos 7 caracteres en el Authorization Number.");
+  }
+}
+  const input = document.getElementById('authNumber');
+  const value = input.value.replace(/\s+/g, ''); // Eliminar espacios existentes
+
+  if (value.length > 7) {
+    // Separar en dos partes: primeros 7 caracteres y el resto
+    const firstPart = value.substring(0, 7);
+    const secondPart = value.substring(7);
+    input.value = `${firstPart} ${secondPart}`; // Actualizar el campo con el formato correcto
+  }
+}
+
+// Función principal para buscar información del SVC
+function getSVCInfo() {
+  const svcName = document.getElementById('svcName').value.trim().toLowerCase(); // Limpia espacios y convierte a minúsculas
+  if (!svcName) {
+    alert('Please enter an SVC Name.'); // Mensaje si el campo está vacío
+    return;
+  }
+
+  fetch('svc_database.json') // Cargar datos desde el archivo JSON
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`Error loading SVC data: ${response.status}`);
+      }
+      return response.json();
+    })
+    .then(data => {
+      const exactMatch = data.find(svc => normalizeString(svc.SVC_Name) === normalizeString(svcName)); // Buscar coincidencia exacta
+      const partialMatches = data.filter(svc => normalizeString(svc.SVC_Name).includes(normalizeString(svcName))); // Buscar coincidencias parciales
+
+      if (exactMatch) {
+        showPopup(exactMatch); // Mostrar popup si hay coincidencia exacta
+      } else if (partialMatches.length > 0) {
+        showSuggestions(partialMatches); // Mostrar sugerencias si hay coincidencias parciales
+      } else {
+        alert('No matches found.'); // Mensaje si no hay coincidencias
+      }
+    })
+    .catch(error => {
+      console.error('Fetch Error:', error); // Mostrar cualquier error en la consola
+      alert('An error occurred while fetching the SVC data. Check the console for details.');
+    });
+}
+
+// Función para mostrar un popup con la información detallada del SVC
+function showPopup(svc) {
+  const diagCost = parseFloat(svc.Diag_Cost.replace('$', '').trim()) || 0; // Convertir a número o asignar 0 si está vacío
+  const laborCost = parseFloat(svc.Labor_Cost.replace('$', '').trim()) || 0;
+  const sealSystemLabor = parseFloat(svc["Major_Repair_/_Sealed_System"].replace('$', '').trim()) || 0;
+
+  const styles = `
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f0f0f5;
+        color: #2a2f42;
+        margin: 20px;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px #2a2f42;
+      }
+      h2 {
+        color: #2a2f42;
+        text-align: center;
+        margin-bottom: 20px;
+      }
+      p {
+        font-size: 16px;
+        line-height: 1.5;
+      }
+      strong {
+        color: #2a2f42;
+      }
+    </style>
+  `;
+
+  const info = `
+    ${styles}
+    <body>
+      <h2>SVC Information</h2>
+      <p><strong>SVC Code:</strong> ${svc.SVC_Code}</p>
+      <p><strong>SVC Name:</strong> ${svc.SVC_Name}</p>
+      <p><strong>Diag:</strong> $${diagCost.toFixed(2)}</p>
+      <p><strong>Labor:</strong> $${laborCost.toFixed(2)}</p>
+      <p><strong>Seal System Labor:</strong> $${sealSystemLabor.toFixed(2)}</p>
+      <p><strong>Shipping Address:</strong> ${svc.Shipping_Address}</p>
+    </body>
+  `;
+
+  const popup = window.open('', '_blank', 'width=500,height=400'); // Abrir nuevo popup
+  popup.document.write(info); // Escribir contenido en el popup
+  popup.document.close(); // Finalizar el documento
+}
+
+// Función para mostrar una lista de sugerencias en un popup
+function showSuggestions(matches) {
+  const styles = `
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #2a2f42;
+        color: #333;
+        margin: 20px;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      }
+      h2 {
+        color: ORANGE;
+        text-align: center;
+        margin-bottom: 20px;
+      }
+      ul {
+        list-style-type: none;
+        padding: 0;
+      }
+      li {
+        padding: 10px;
+        margin: 5px 0;
+        background-color: #ffffff;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
+      li:hover {
+        background-color: #e0e0e5;
+      }
+    </style>
+  `;
+
+  const suggestionList = matches.map(match => {
+    return `<li onclick="window.opener.selectSuggestion('${match.SVC_Code}')">${match.SVC_Name} (${match.SVC_Code})</li>`;
+  }).join('');
+
+  const suggestionsHTML = `
+    ${styles}
+    <body>
+      <h2>Suggestions</h2>
+      <ul>${suggestionList}</ul>
+    </body>
+  `;
+
+  const popup = window.open('', '_blank', 'width=400,height=300'); // Abrir nuevo popup para sugerencias
+  popup.document.write(suggestionsHTML); // Escribir contenido en el popup
+  popup.document.close(); // Finalizar el documento
+}
+
+// Función global para manejar la selección de una sugerencia
+function selectSuggestion(svcCode) {
+  fetch('svc_database.json') // Volver a cargar los datos desde el archivo JSON
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`Error loading SVC data: ${response.status}`);
+      }
+      return response.json();
+    })
+    .then(data => {
+      const selectedSVC = data.find(match => match.SVC_Code === svcCode); // Buscar el SVC seleccionado
+      if (selectedSVC) {
+        showPopup(selectedSVC); // Mostrar la información del SVC seleccionado
+      }
+    })
+    .catch(error => {
+      console.error('Fetch Error in selectSuggestion:', error); // Mostrar cualquier error
+      alert('An error occurred while fetching the SVC data. Check the console for details.');
+    });
+}
+
+function searchModel() {
+  const model = document.getElementById('model').value; // Toma el valor del campo "model"
+  if (model) {
+    const query = `${model} manual`; // Construye el término de búsqueda
+
+    // Abre la búsqueda en una nueva ventana con dimensiones específicas
+    window.open(
+      `https://www.google.com/search?q=${encodeURIComponent(query)}`,
+      '_blank',
+      'width=800,height=600,resizable=yes'
+    );
+  } else {
+    alert("Please enter a model number."); // Mensaje si no se ingresa un modelo
+  }
+}
+
+// Función para eliminar una fila
+function updateTotals() {
+  // Variables para SVC
+  let svcLabor = parseFloat(document.getElementById('laborCost').value) || 0;
+  let svcMileage = parseFloat(document.getElementById('mileageCost').value) || 0;
+  let svcRR = parseFloat(document.getElementById('rrCost').value) || 0;
+  
+  let svcTotal = svcLabor + svcMileage + svcRR ;
+  let svcPartsTotal = 0;
+
+  // Recolectar partes en SVC y calcular el costo total
+  const svcRows = document.querySelectorAll("#svcTable tbody tr");
+  svcRows.forEach((row) => {
+    const partCostField = row.querySelector("td input[placeholder='Cost']");
+    const qtyField = row.querySelector("td input[placeholder='Qty']");
+    const totalCostField = row.querySelector("td input[placeholder='Total Cost']");
+
+    const partCost = parseFloat(partCostField?.value) || 0;
+    const quantity = parseInt(qtyField?.value) || 1;
+
+    const totalPartCost = partCost * quantity;
+    svcPartsTotal += totalPartCost;
+
+    // Actualizar el campo de Total Cost automáticamente
+    totalCostField.value = totalPartCost.toFixed(2);
+  });
+
+  svcTotal += svcPartsTotal;
+
+  // Actualizar el subtotal de SVC en el DOM
+  const svcSubtotal = document.getElementById("svcSubtotal");
+  svcSubtotal.innerHTML = `$${svcTotal.toFixed(2)}   SVC TOTAL <span style="font-size: 0.9em;">($${svcPartsTotal.toFixed(2)} parts)</span>`;
+
+  // Variables para CTR
+  let ctrLabor = svcLabor; // Asumimos que el Labor es igual al de SVC
+  let ctrMileage = svcMileage; // Asumimos que el Mileage es igual al de SVC
+  let ctrRR = svcRR; // Asumimos que el R&R es igual al de SVC
+  let ctrPartsTotal = 0;
+
+  const ctrRows = document.querySelectorAll("#ctrTable tbody tr");
+  ctrRows.forEach((row) => {
+    const partCostField = row.querySelector("td input[placeholder='Cost']");
+    const qtyField = row.querySelector("td input[placeholder='Qty']");
+    const totalCostField = row.querySelector("td input[placeholder='Total Cost']");
+
+    const partCost = parseFloat(partCostField?.value) || 0;
+    const quantity = parseInt(qtyField?.value) || 1;
+
+    const totalPartCost = partCost * quantity;
+    ctrPartsTotal += totalPartCost;
+
+    // Actualizar el campo de Total Cost automáticamente
+    totalCostField.value = totalPartCost.toFixed(2);
+  });
+
+  const ctrTotal = ctrPartsTotal + ctrLabor + ctrMileage + ctrRR;
+
+  // Actualizar el subtotal de CTR en el DOM
+  const ctrSubtotal = document.getElementById("ctrSubtotal");
+  ctrSubtotal.innerHTML = `$${ctrTotal.toFixed(2)}   CTR TOTAL <span style="font-size: 0.9em;">($${ctrPartsTotal.toFixed(2)} parts)</span>`;
+}
+
+function toggleField(fieldId, checkboxId) {
+  const field = document.getElementById(fieldId);
+  const checkbox = document.getElementById(checkboxId);
+
+  if (checkbox.checked) {
+    // Bloquear el textbox y limpiar su valor
+    field.disabled = true;
+    field.value = ""; // Opcional: limpiar el valor si se deshabilita
+  } else {
+    // Desbloquear el textbox
+    field.disabled = false;
+  }
+}
+
+// Función para agregar una fila en las tablas (CTR o SVC)
+function addRow(tableId) {
+  const tableBody = document.querySelector(`#${tableId}Table tbody`);
+  const newRow = document.createElement("tr");
+
+  newRow.innerHTML = `
+    <td><input type="number" placeholder="Cost" style="width: 90%;" oninput="updateTotals()" min="0"></td>
+    <td><input type="number" placeholder="Qty" style="width: 50px;" oninput="updateTotals()" min="1" max="99" value="1"></td>
+    <td><input type="number" placeholder="Total Cost" style="width: 90%;" readonly></td>
+    <td><input type="text" placeholder="Number" style="width: 90%;"></td>
+    <td><input type="text" placeholder="Name" style="width: 90%;"></td>
+    <td style="display: flex; gap: 5px; justify-content: flex-start;">
+      <button class="orange" onclick="searchEncompass(this)">Encompass</button>
+      <button class="dark-gray" onclick="deleteRow(this)">Delete</button>
+    </td>
+  `;
+
+  tableBody.appendChild(newRow);
+}
+
+function deleteRow(button) {
+  const row = button.closest('tr');
+  row.remove();
+  updateTotals(); // Recalcula los totales al eliminar una fila
+}
+
+function addSVCTaxes() {
+    const tableBody = document.querySelector(`#svcTable tbody`);
+    const newRow = document.createElement("tr");
+
+    newRow.innerHTML = `
+        <td><input type="number" placeholder="Cost" style="width: 90%;" oninput="updateTotals()" min="0"></td>
+        <td><input type="number" placeholder="Qty" style="width: 50px;" oninput="updateTotals()" min="1" max="99" value="1"></td>
+        <td><input type="number" placeholder="Total Cost" style="width: 90%;" readonly></td>
+        <td><input type="text" placeholder="Number" style="width: 90%;" value="Taxes" readonly></td> <!-- Número predefinido -->
+        <td><input type="text" placeholder="Name" style="width: 90%;"></td> <!-- Nombre editable -->
+        <td style="display: flex; gap: 5px; justify-content: flex-start;">
+            <button class="dark-gray" onclick="deleteRow(this)">Delete</button> <!-- Botón de eliminar -->
+        </td>
+    `;
+
+    tableBody.appendChild(newRow);
+}
+
+// Función para buscar una parte en Encompass
+function searchEncompass(button) {
+  const row = button.closest('tr'); // Encuentra la fila del botón clicado
+  const partNumber = row.querySelector('td:nth-child(4) input').value; // Toma el valor del campo "Part Number"
+
+  if (partNumber) {
+    const url = `https://encompass.com/search?searchTerm=${encodeURIComponent(partNumber)}`;
+    
+    // Abrir en una nueva ventana con dimensiones específicas
+    window.open(url, '_blank', 'width=800,height=600,resizable=yes');
+  } else {
+    alert("Por favor ingresa un número de parte antes de buscar.");
+  }
+}
+
+function addShippingHandling() {
+    const tableBody = document.querySelector(`#ctrTable tbody`);
+    const newRow = document.createElement("tr");
+
+    newRow.innerHTML = `
+        <td>
+            <input 
+                type="number" 
+                placeholder="Cost" 
+                style="width: 90%;" 
+                oninput="updateTotals()" 
+                min="0" 
+                value="11.95"> <!-- Precargado con $11.95 -->
+        </td>
+        <td>
+            <input 
+                type="number" 
+                placeholder="Qty" 
+                style="width: 50px;" 
+                oninput="updateTotals()" 
+                min="1" 
+                max="99" 
+                value="1"> <!-- Valor predeterminado para Qty -->
+        </td>
+        <td>
+            <input 
+                type="number" 
+                placeholder="Total Cost" 
+                style="width: 90%;" 
+                readonly> <!-- Solo lectura -->
+        </td>
+        <td>
+            <input 
+                type="text" 
+                placeholder="Number" 
+                style="width: 90%;" 
+                value="S&H" 
+                readonly> <!-- Número predefinido -->
+        </td>
+        <td>
+            <input 
+                type="text" 
+                placeholder="Name" 
+                style="width: 90%;"> <!-- Nombre editable -->
+        </td>
+        <td style="display: flex; gap: 5px; justify-content: flex-start;">
+            <button class="dark-gray" onclick="deleteRow(this)">Delete</button> <!-- Botón de eliminar -->
+        </td>
+    `;
+
+    tableBody.appendChild(newRow);
+
+    // Llamar a updateTotals() inmediatamente después de agregar S&H
+    updateTotals();
+}
+
+function addTaxes() {
+    const tableBody = document.querySelector(`#ctrTable tbody`);
+    const newRow = document.createElement("tr");
+
+    newRow.innerHTML = `
+        <td><input type="number" placeholder="Cost" style="width: 90%;" oninput="updateTotals()" min="0"></td>
+        <td><input type="number" placeholder="Qty" style="width: 50px;" oninput="updateTotals()" min="1" max="99" value="1"></td>
+        <td><input type="number" placeholder="Total Cost" style="width: 90%;" readonly></td>
+        <td><input type="text" placeholder="Number" style="width: 90%;" value="Taxes" readonly></td> <!-- Número predefinido -->
+        <td><input type="text" placeholder="Name" style="width: 90%;"></td> <!-- Nombre editable -->
+        <td style="display: flex; gap: 5px; justify-content: flex-start;">
+            <button class="dark-gray" onclick="deleteRow(this)">Delete</button> <!-- Botón de eliminar -->
+        </td>
+    `;
+
+    tableBody.appendChild(newRow);
+}
+
+function updateRepairPercentageWithLOL() {
+  const previousRepairs = parseFloat(document.getElementById('previousClaims').value) || 0;
+  const applianceValue = parseFloat(document.getElementById('applianceValue').value) || 0;
+
+  if (applianceValue <= 0) {
+    console.warn("El valor del electrodoméstico (LOL Value) no es válido. Deteniendo la ejecución.");
+    document.getElementById('repairResults').textContent = "Enter a valid LOL Value to calculate.";
+    return;
+  }
+
+  // Calcular el porcentaje de reparaciones previas respecto al valor del electrodoméstico
+  const repairPercentage = (previousRepairs / applianceValue) * 100;
+  console.log("Porcentaje de reparaciones calculado:", repairPercentage);
+
+  // Mostrar el resultado de manera clara y manejando valores inválidos
+  document.getElementById('repairResults').textContent = `${Math.round(repairPercentage)}%`;
+}
+
+async function calculateRepairPercentage() {
+  console.log("Iniciando cálculo de reparación basado en valores dinámicos...");
+
+  // Obtener valores necesarios
+  const previousClaims = parseFloat(document.getElementById('previousClaims').value) || 0; // Labor
+  const lolValue = parseFloat(document.getElementById('applianceValue').value) || 0; // LOL
+
+  if (lolValue <= 0) {
+    console.warn("LOL Value está vacío o es inválido. Deteniendo el cálculo.");
+    document.getElementById('repairResults').textContent = "Enter a valid LOL Value to calculate.";
+    return;
+  }
+
+  // Calcular el porcentaje de reparación basado en LOL
+  const repairPercentage = (previousClaims / lolValue) * 100;
+  console.log("Porcentaje de reparación calculado:", repairPercentage);
+
+  try {
+    console.log("Consultando el backend para obtener configuraciones dinámicas...");
+    const response = await fetch("http://localhost:5000/config");
+    if (!response.ok) {
+      throw new Error(`Error en la respuesta del backend: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    const lessThanOneYearPercentage = parseFloat(data.lessThanOneYearPercentage);
+    const moreThanOneYearPercentage = parseFloat(data.moreThanOneYearPercentage);
+
+    if (isNaN(lessThanOneYearPercentage) || isNaN(moreThanOneYearPercentage)) {
+      console.error("Valores dinámicos obtenidos son inválidos:", {
+        lessThanOneYearPercentage,
+        moreThanOneYearPercentage,
+      });
+      document.getElementById('repairResults').textContent = "Error fetching dynamic percentages.";
+      return;
+    }
+
+    console.log("Configuraciones dinámicas obtenidas:", {
+      lessThanOneYearPercentage,
+      moreThanOneYearPercentage,
+    });
+
+    // Determinar límite basado en meses restantes
+    const espMonthsLeftText = calculateESPMonthsLeft();
+    const espMonthsLeft = typeof espMonthsLeftText === "number" ? espMonthsLeftText : null;
+
+    let lolLimit;
+
+    // Verificar meses restantes en ESP
+    if (espMonthsLeft > 12) {
+      lolLimit = moreThanOneYearPercentage; // Más de un año
+    } else if (espMonthsLeft !== null && espMonthsLeft >= 0) {
+      lolLimit = lessThanOneYearPercentage; // Menos de un año o expirado
+    } else {
+      // Si faltan datos de expiración (no definidos o inválidos)
+      console.warn("Fecha de expiración faltante o inválida.");
+      document.getElementById('repairResults').textContent = "Missing or invalid expiration date. Please check.";
+      return;
+    }
+
+    console.log("Límite dinámico aplicado (lolLimit):", lolLimit);
+
+    // Generar recomendación basada en el límite dinámico
+    let finalRecommendation = "";
+    let color = "";
+
+    if (repairPercentage > lolLimit) {
+      finalRecommendation = "REPLACEMENT RECOMMENDED";
+      color = "red";
+    } else {
+      finalRecommendation = "REPAIR RECOMMENDED";
+      color = "green";
+    }
+
+    // Mostrar recomendación en la pantalla
+    document.getElementById('repairResults').innerHTML = `
+      Repair Percentage: ${repairPercentage.toFixed(2)}%<br>
+      <span style="color: ${color}; font-weight: bold;">${finalRecommendation}</span>
+    `;
+    console.log("Recomendación final mostrada:", finalRecommendation);
+  } catch (error) {
+    console.error("Error durante el proceso de cálculo:", error);
+    document.getElementById('repairResults').textContent = "Error fetching configuration.";
+  }
+}
+
+function formatExpirationDate() {
+  const input = document.getElementById('expirationDate');
+  let value = input.value.replace(/\D/g, ''); // Eliminar cualquier carácter que no sea número
+  if (value.length >= 2) value = value.slice(0, 2) + '/' + value.slice(2); // Agregar el primer "/"
+  if (value.length >= 5) value = value.slice(0, 5) + '/' + value.slice(5); // Agregar el segundo "/"
+  input.value = value.slice(0, 8); // Limitar la entrada al formato MM/DD/YY
+  calculateMonthsRemaining(); // Llamar a la función para calcular meses restantes
+}
+
+function calculateMonthsRemaining() {
+  const dateInput = document.getElementById('expirationDate').value;
+
+  // Validar el formato MM/DD/YY usando una expresión regular
+  const datePattern = /^(0[1-9]|1[0-2])\/(0[1-9]|[1-2][0-9]|3[0-1])\/\d{2}$/; // MM/DD/YY
+  if (!datePattern.test(dateInput)) {
+    document.getElementById('remainingMonths').textContent = "Enter a valid date in MM/DD/YY format.";
+    return;
+  }
+
+  // Convertir MM/DD/YY a una fecha completa
+  const [month, day, year] = dateInput.split('/').map(Number);
+  const fullYear = year >= 70 ? year + 1900 : year + 2000; // Asumir año en formato 1900+ para valores >=70 y 2000+ para menores
+  const expDate = new Date(fullYear, month - 1, day); // Date usa meses de 0-11
+
+  const currentDate = new Date();
+
+  // Calcular diferencia en meses
+  const diffTime = expDate - currentDate;
+  const diffMonths = Math.max(0, Math.round(diffTime / (1000 * 60 * 60 * 24 * 30))); // Convierte ms a meses redondeados
+
+  document.getElementById('remainingMonths').textContent = `${diffMonths} MONTHS REMAINING`;
+}
+
+function calculateESPMonthsLeft() {
+  const dateInput = document.getElementById('expirationDate').value;
+
+  if (!dateInput) {
+    console.warn("Fecha de expiración no proporcionada.");
+    return null; // Indica que faltan datos
+  }
+
+  const expirationDate = new Date(dateInput); // Fecha de expiración del acuerdo
+  const currentDate = new Date();
+
+  // Validar que la fecha sea válida
+  if (isNaN(expirationDate.getTime())) {
+    console.warn("Fecha de expiración inválida.");
+    return null;
+  }
+
+  // Calcular la diferencia en meses entre la fecha actual y la de expiración
+  const monthsLeft = (expirationDate.getFullYear() - currentDate.getFullYear()) * 12 +
+                     (expirationDate.getMonth() - currentDate.getMonth());
+
+  // Devolver el número de meses restantes o indicar que ya expiró
+  return monthsLeft >= 0 ? monthsLeft : 0; // Si ya expiró, devuelve 0
+}
+
+async function calculateLOLPercentage() {
+  console.log("Iniciando cálculo de LOL basado en valores dinámicos...");
+
+  const previousClaims = parseFloat(document.getElementById('previousClaims').value) || 0; // Labor
+  const applianceValue = parseFloat(document.getElementById('applianceValue').value) || 0; // LOL
+
+  if (applianceValue <= 0) {
+    console.warn("LOL Value está vacío o es inválido. Deteniendo el cálculo.");
+    document.getElementById('lolResults').textContent = "Enter a valid LOL Value to calculate.";
+    return;
+  }
+
+  // Calcular los meses restantes del ESP
+  const espMonthsLeft = calculateESPMonthsLeft();
+
+  if (espMonthsLeft === null) {
+    document.getElementById('lolResults').textContent = "Missing or invalid expiration date.";
+    return;
+  }
+
+  console.log("Meses restantes en ESP:", espMonthsLeft);
+
+  // Obtener totales de SVC y CTR
+  const svcTotal = parseFloat(document.getElementById('svcSubtotal').textContent.replace(/[^0-9.]/g, '')) || 0;
+  const ctrTotal = parseFloat(document.getElementById('ctrSubtotal').textContent.replace(/[^0-9.]/g, '')) || 0;
+
+  // Determinar el tipo de LOL (FV o FV-C)
+  const lolType = document.querySelector('input[name="lolType"]:checked')?.value || "FV";
+  const remainingLOL = lolType === "FV-C" ? applianceValue - previousClaims : applianceValue;
+
+  // Calcular porcentajes de LOL para SVC y CTR
+  const svcLOLPercentage = remainingLOL > 0 ? ((previousClaims + svcTotal) / applianceValue) * 100 : 0;
+  const ctrLOLPercentage = remainingLOL > 0 ? ((previousClaims + ctrTotal) / applianceValue) * 100 : 0;
+
+  try {
+    console.log("Consultando el backend para obtener configuraciones dinámicas...");
+    const response = await fetch("http://localhost:5000/config");
+    if (!response.ok) {
+      throw new Error(`Error en la respuesta del backend: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    const lessThanOneYearPercentage = parseFloat(data.lessThanOneYearPercentage);
+    const moreThanOneYearPercentage = parseFloat(data.moreThanOneYearPercentage);
+
+    if (isNaN(lessThanOneYearPercentage) || isNaN(moreThanOneYearPercentage)) {
+      console.error("Valores dinámicos obtenidos son inválidos:", {
+        lessThanOneYearPercentage,
+        moreThanOneYearPercentage,
+      });
+      document.getElementById('lolResults').textContent = "Error fetching dynamic percentages.";
+      return;
+    }
+
+    console.log("Configuraciones dinámicas obtenidas:", {
+      lessThanOneYearPercentage,
+      moreThanOneYearPercentage,
+    });
+
+    // Determinar límite basado en meses restantes
+    const lolLimit = espMonthsLeft > 12
+      ? moreThanOneYearPercentage
+      : lessThanOneYearPercentage; // Menos de un año o expirado
+
+    console.log("Límite dinámico aplicado (lolLimit):", lolLimit);
+
+    // Generar la recomendación final
+    let finalRecommendation = "";
+
+    if (svcLOLPercentage <= lolLimit && ctrLOLPercentage <= lolLimit) {
+      if (svcTotal <= ctrTotal + 35) {
+        finalRecommendation = `Approve SVC repairs for $${svcTotal.toFixed(2)}. Repairs will reach ${Math.round(svcLOLPercentage)}% LOL, ${espMonthsLeft === 0 ? "agreement already expired," : `with ${espMonthsLeft} months left,`} Repair is the best option.`;
+      } else {
+        finalRecommendation = `Approve CTR repairs for $${ctrTotal.toFixed(2)}. Repairs will reach ${Math.round(ctrLOLPercentage)}% LOL, ${espMonthsLeft === 0 ? "agreement already expired," : `with ${espMonthsLeft} months left,`} Repair is the best option.`;
+      }
+    } else if (svcLOLPercentage <= lolLimit) {
+      finalRecommendation = `Approve SVC repairs for $${svcTotal.toFixed(2)}. Repairs will reach ${Math.round(svcLOLPercentage)}% LOL, ${espMonthsLeft === 0 ? "agreement already expired," : `with ${espMonthsLeft} months left,`} Repair is the best option.`;
+    } else if (ctrLOLPercentage <= lolLimit) {
+      finalRecommendation = `Approve CTR repairs for $${ctrTotal.toFixed(2)}. Repairs will reach ${Math.round(ctrLOLPercentage)}% LOL, ${espMonthsLeft === 0 ? "agreement already expired," : `with ${espMonthsLeft} months left,`} Repair is the best option.`;
+    } else {
+      finalRecommendation = `
+Repairs will reach ${Math.round(Math.min(svcLOLPercentage, ctrLOLPercentage))}% LOL, ${espMonthsLeft === 0 ? "agreement already expired," : `with ${espMonthsLeft} months left,`} Best option is to evaluate alternate resolution, request comparable replacement quote to DLR.
+(Internal Claims notes only: Email sent to: ${document.getElementById('svcEmail')?.value || '____________'} on ${new Date().toLocaleDateString('en-US')})
+***REPLACEMENT IS NOT GUARANTEED***
+`.trim();
+    }
+
+    // Mostrar la recomendación en el Textarea Editable
+    document.getElementById('finalRecommendation').value = finalRecommendation;
+
+    
+// Mostrar resultados en pantalla con colores según el porcentaje
+document.getElementById('lolResults').innerHTML = `
+    <strong>LOL Percentages:</strong><br>
+    - SVC LOL: <span style="${svcLOLPercentage > lolLimit ? 'color: red;' : 'color: green;'}">${Math.round(svcLOLPercentage)}%</span><br>
+    - CTR LOL: <span style="${ctrLOLPercentage > lolLimit ? 'color: red;' : 'color: green;'}">${Math.round(ctrLOLPercentage)}%</span><br>
+    ${lolType === "FV-C" ? `- REMAINING LOL: <span>$${remainingLOL.toFixed(2)}</span><br>` : ""}
+`;
+
+
+    console.log("Recomendación final mostrada:", finalRecommendation);
+  } catch (error) {
+    console.error("Error durante el proceso de cálculo:", error);
+    document.getElementById('lolResults').textContent = "Error fetching configuration.";
+    
+  }
+}
+
+function sendCompQuoteEmail() {
+  // Obtener los valores dinámicos
+  const authNumber = document.getElementById('authNumber').value || "[AUTH_NUMBER]";
+  const firstSevenChars = authNumber.substring(0, 7); // Primeros 7 caracteres del Auth Number
+  const dealerName = "[Dealer name]"; // Cambiar por un valor dinámico si es necesario
+
+  // Template del correo
+  const subject = encodeURIComponent(`REQUESTED COMP QUOTE FROM DEALER. REPLACEMENT IS NOT GUARANTEED: [AGREEMENT# ${firstSevenChars} / DLR ORDER #     `);
+  const body = encodeURIComponent(`Hello Team,
+
+Could you kindly provide us with a comparable replacement quote for our mutual customer while we await the diagnostic report from the servicer? (Please include R&R if applicable)
+
+We are requesting this ahead of adjudication to ensure we have all the necessary documentation to make the best claims decision.
+
+
+
+Please note that a replacement is not guaranteed at this time.
+Thank you
+
+
+
+`);
+
+// Obtener el correo del SVC
+
+const svcEmail = document.getElementById('svcEmail')?.value || ''; // Si no hay correo, dejar vacío
+
+  // Generar el enlace mailto
+const mailtoLink = `mailto:${svcEmail}?subject=${subject}&body=${body}`;
+  
+  // Abrir Outlook usando el enlace
+  window.location.href = mailtoLink;
+}
+// Función para mostrar todos los datos en el área de resultados
+function showResults() {
+    const authNumber = document.getElementById('authNumber').value || "";
+    const svcName = document.getElementById('svcName').value || "";
+    const model = document.getElementById('model').value || "";
+    const serial = document.getElementById('serial').value || "";
+
+    const physicalDamage = document.querySelector('input[name="physicalDamage"]:checked')?.value === "yes" 
+        ? "PHYSICAL DAMAGE / ABUSE: YES" 
+        : "NO PHYSICAL DAMAGE / ABUSE";
+
+    const complaint = document.getElementById('complaint').value || "";
+    const techDiag = document.getElementById('techDiag').value || "";
+
+    const laborCost = parseFloat(document.getElementById('laborCost')?.value) || 0;
+    const rrCostElement = document.getElementById('rrCost'); // Verificar existencia
+    const mileageCostElement = document.getElementById('mileageCost'); // Verificar existencia
+
+    const rrCost = rrCostElement && rrCostElement.value !== "" 
+        ? parseFloat(rrCostElement.value) 
+        : 0; // Asegurarse de que RR tenga un valor válido o sea 0
+    const mileageCost = mileageCostElement && mileageCostElement.value !== "" 
+        ? parseFloat(mileageCostElement.value) 
+        : 0; // Asegurarse de que Mileage tenga un valor válido o sea 0
+
+       // **SVC Rows**
+    const svcRows = Array.from(document.querySelectorAll('#svcTable tbody tr')).map(row => {
+        const partCost = parseFloat(row.querySelector("td input[placeholder='Cost']")?.value) || 0;
+        const quantity = parseInt(row.querySelector("td input[placeholder='Qty']")?.value) || 1;
+        const partNumber = row.querySelector("td input[placeholder='Number']")?.value || "";
+        const partName = row.querySelector("td input[placeholder='Name']")?.value || "";
+
+        const totalCost = partCost * quantity;
+
+        // Concatenar cantidad al nombre de la parte
+        const quantityStr = quantity > 1 ? ` (${quantity}pc $${partCost.toFixed(2)}e)` : "";
+        const partNameWithQuantity = `${partName}${quantityStr}`;
+
+        // Espaciado dinámico para cada columna
+        const costStr = `$${totalCost.toFixed(2)}`.padEnd(12);
+        const partNumberStr = `${partNumber}`.padEnd(15);
+        const partNameStr = partNameWithQuantity.padEnd(30);
+
+        return `${costStr}${partNumberStr}${partNameStr}`;
+    }).join("\n");
+
+    // Calcular **SVC Total**
+    let svcPartsTotal = 0;
+    document.querySelectorAll('#svcTable tbody tr').forEach(row => {
+        const partCost = parseFloat(row.querySelector("td input[placeholder='Cost']")?.value) || 0;
+        const quantity = parseInt(row.querySelector("td input[placeholder='Qty']")?.value) || 1;
+        svcPartsTotal += partCost * quantity;
+    });
+    const svcTotal = svcPartsTotal + laborCost + rrCost + mileageCost; // Incluye taxes
+
+    // **CTR Rows**
+    const ctrRows = Array.from(document.querySelectorAll('#ctrTable tbody tr')).map(row => {
+        const partCost = parseFloat(row.querySelector("td input[placeholder='Cost']")?.value) || 0;
+        const quantity = parseInt(row.querySelector("td input[placeholder='Qty']")?.value) || 1;
+        const partNumber = row.querySelector("td input[placeholder='Number']")?.value || "";
+        const partName = row.querySelector("td input[placeholder='Name']")?.value || "";
+
+        const totalCost = partCost * quantity;
+
+        // Concatenar cantidad al nombre de la parte
+        const quantityStr = quantity > 1 ? ` (${quantity}pc $${partCost.toFixed(2)}e)` : "";
+        const partNameWithQuantity = `${partName}${quantityStr}`;
+
+        // Espaciado dinámico para cada columna
+        const costStr = `$${totalCost.toFixed(2)}`.padEnd(12);
+        const partNumberStr = `${partNumber}`.padEnd(15);
+        const partNameStr = partNameWithQuantity.padEnd(30);
+
+        return `${costStr}${partNumberStr}${partNameStr}`;
+    }).join("\n");
+
+    // Calcular **CTR Total**
+    let ctrPartsTotal = 0;
+    document.querySelectorAll('#ctrTable tbody tr').forEach(row => {
+        const partCost = parseFloat(row.querySelector("td input[placeholder='Cost']")?.value) || 0;
+        const quantity = parseInt(row.querySelector("td input[placeholder='Qty']")?.value) || 1;
+        ctrPartsTotal += partCost * quantity;
+    });
+    const ctrTotal = ctrPartsTotal + laborCost + rrCost + mileageCost; // Sin incluir taxes
+
+    // Calcular Remaining LOL (si aplica FV-C)
+    const lolType = document.querySelector('input[name="lolType"]:checked')?.value || "No LOL Type selected";
+    const lolValue = parseFloat(document.getElementById('applianceValue').value) || 0;
+    const previousClaims = parseFloat(document.getElementById('previousClaims').value) || 0;
+    const remainingLOL = lolType === "FV-C" ? (lolValue - previousClaims) : null;
+
+    // Obtener valores de MFG Coverage y Final Recommendation
+    const mfgCoverage = document.getElementById('noMfgCoverage').checked
+        ? "NO ADDITIONAL MFG COVERAGE"
+        : document.getElementById('mfgCoverage').value || "";
+
+    const finalRecommendation = document.getElementById('finalRecommendation').value || "";
+
+    // Formatear resultados
+    const laborFormatted = `$${laborCost.toFixed(2)}`.padEnd(12);
+    const rrFormatted = rrCost > 0 ? `$${rrCost.toFixed(2)}`.padEnd(12) + "RR\n" : ""; // Mostrar RR solo si es mayor a 0
+    const mileageFormatted = mileageCost > 0 ? `$${mileageCost.toFixed(2)}`.padEnd(12) + "MILEAGE\n" : ""; // Mostrar Mileage solo si es mayor a 0
+    const svcTotalFormatted = `$${svcTotal.toFixed(2)}`.padEnd(12);
+    const ctrTotalFormatted = `$${ctrTotal.toFixed(2)}`.padEnd(12);
+    const remainingLOLFormatted = remainingLOL !== null 
+        ? `Remaining LOL: $${remainingLOL.toFixed(2)}\n` 
+        : "";
+
+    // Ajuste en la generación del texto final dentro de showResults()
+let formattedRecommendation = finalRecommendation.includes("Best option is to evaluate alternate resolution")
+    ? finalRecommendation // Mostrar solo la recomendación sin encabezado
+    : `FINAL RECOMMENDATION IS TO ${finalRecommendation}`.trim();
+
+// Formatear resultados con la recomendación corregida
+let results = `
+AUTH: ${authNumber}
+RECEIVED AN RFA FROM ${svcName}
+MODEL: ${model}
+SERIAL: ${serial}
+${physicalDamage}
+COMPLAINT: ${complaint}
+TECH'S DIAG: ${techDiag}
+SVC ESTIMATE:
+${laborFormatted}LABOR
+${rrFormatted}${mileageFormatted}${svcRows}
+${svcTotalFormatted}TOTAL SVC ($${svcPartsTotal.toFixed(2)} PARTS)
+CTR ESTIMATE:
+${laborFormatted}LABOR
+${rrFormatted}${mileageFormatted}${ctrRows}
+${ctrTotalFormatted}TOTAL CTR ($${ctrPartsTotal.toFixed(2)} PARTS)
+LOL: ${lolType}
+LOL VALUE: $${lolValue.toFixed(2)}
+PREVIOUS CLAIMS: $${previousClaims.toFixed(2)}
+${remainingLOLFormatted}MFG COVERAGE:
+${mfgCoverage}
+${formattedRecommendation}`.trim();
+    const resultsBox = document.getElementById('results');
+    resultsBox.style.fontFamily = 'Courier New, monospace';
+    resultsBox.value = results;
+
+    autoResizeTextarea();
+}
+
+function autoResizeTextarea() {
+    const resultsBox = document.getElementById('results');
+    resultsBox.style.height = 'auto'; // Restablece la altura
+    resultsBox.style.overflowY = 'hidden'; // Oculta barras de desplazamiento vertical
+    resultsBox.style.height = `${resultsBox.scrollHeight}px`; // Ajusta al contenido dinámicamente
+    resultsBox.scrollIntoView({ behavior: 'smooth' }); // Opcional: desplazar para que sea visible
+}
+
+function copyToClipboard() {
+    const resultsBox = document.getElementById('results'); // Referencia al área de texto
+    resultsBox.select(); // Seleccionar el texto del área de texto
+    resultsBox.setSelectionRange(0, 99999); // Para dispositivos móviles
+    document.execCommand('copy'); // Copiar el texto al portapapeles
+
+    // Cambiar dinámicamente el texto del botón
+    const copyButton = document.getElementById('copyButton');
+    if (copyButton) {
+        const originalText = copyButton.textContent; // Guarda el texto original
+        copyButton.textContent = "Copied"; // Cambia el texto a "Copied"
+
+        setTimeout(() => {
+            copyButton.textContent = originalText; // Regresa al texto original después de 3 segundos
+        }, 3000);
+    } else {
+        console.error("No se encontró el botón con ID 'copyButton'.");
+    }
+}
+
+// save to log function, guarda el log y recarga la página
+function saveToLog() {
+    const resultsBox = document.getElementById('results'); 
+    const resultsContent = resultsBox.value.trim();
+    const now = new Date();
+    const formattedDate = now.toLocaleDateString();
+    const formattedTime = now.toLocaleTimeString();
+
+    if (!resultsContent) {
+        alert("There´s nothing to save.");
+        return;
+    }
+
+    // Recuperar y actualizar claims procesados
+    claimsProcessed = parseInt(localStorage.getItem("claimsProcessed")) || 0;
+    claimsProcessed++;
+    localStorage.setItem("claimsProcessed", claimsProcessed);
+
+    // Recuperar el log antes de modificarlo
+    dailyLog = localStorage.getItem('dailyLog') || "";
+
+    // Generar encabezado con fecha, hora y duración
+    const header = `=== ${formattedDate} - ${formattedTime} | Duration: ${timerElapsed.toFixed(2)} seconds ===\n`;
+
+    // Agregar contenido al log
+    dailyLog += `${header}${resultsContent}\n\n`;
+
+    // 🔹 Generar y agregar el resumen del día
+    let dailySummary = getDailySummary();
+    if (dailyLog.includes("=== DAILY SUMMARY ===")) {
+        dailyLog = dailyLog.replace(/=== DAILY SUMMARY ===[\s\S]*?======================\n\n/, dailySummary);
+    } else {
+        dailyLog = `${dailySummary}${dailyLog}`;
+    }
+
+    // Guardar log actualizado
+    localStorage.setItem("dailyLog", dailyLog);
+
+    // Mostrar confirmación visual
+    document.getElementById("saveToLogButton").classList.add('saved');
+    document.getElementById("saveToLogButton").disabled = true;
+    document.getElementById("saveConfirmation").style.display = 'inline';
+    setTimeout(() => document.getElementById("saveConfirmation").style.display = 'none', 2000);
+
+    // Recargar la página
+    setTimeout(() => {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        setTimeout(() => location.reload(), 1000);
+    }, 500);
+}
+
+// Llamar estas funciones cuando SVC o CTR sean seleccionados
+document.getElementById("saveToLogButton").addEventListener("click", () => {
+    let svcAmount = parseFloat(document.getElementById("svcSubtotal").textContent.replace(/[^0-9.]/g, '')) || 0;
+    let ctrAmount = parseFloat(document.getElementById("ctrSubtotal").textContent.replace(/[^0-9.]/g, '')) || 0;
+
+    if (svcAmount > ctrAmount) {
+        registerSvcApproval(svcAmount);
+    } else {
+        registerCtrApproval(ctrAmount);
+    }
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+    const saveButton = document.getElementById("saveToLogButton");
+    if (saveButton) {
+        saveButton.removeEventListener("click", saveToLog); // 🔹 Limpiar eventos previos
+        saveButton.addEventListener("click", saveToLog); // 🔹 Asignar el evento correctamente
+    }
+});
+
+// Función para descargar el archivo del log
+function downloadDailyLog() {
+    const date = new Date().toISOString().split("T")[0]; // Fecha para el nombre del archivo
+    const fileName = `log_${date}.txt`; // Nombre del archivo
+    const blob = new Blob([dailyLog], { type: "text/plain" }); // Crear archivo de texto
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = fileName; // Configurar nombre para la descarga
+    a.click();
+    console.log("Archivo descargado:", fileName);
+}
+
+// Función para abrir el log en una nueva ventana
+function openLogInBrowser() {
+    const logWindow = window.open("", "_blank");
+
+    // Verificar si se pudo abrir la ventana
+    if (!logWindow) {
+        alert("No se pudo abrir la ventana del log. Verifica los permisos del navegador.");
+        return;
+    }
+
+    // Generar contenido HTML exclusivo para el log
+    const sanitizedLog = dailyLog.replace(/</g, "&lt;").replace(/>/g, "&gt;"); // Sanitizar caracteres HTML
+    const logContent = `
+        <!DOCTYPE html>
+        <html>
+            <head>
+                <title>Daily Log</title>
+                <style>
+                    body {
+                        font-family: "Courier New", monospace;
+                        white-space: pre-wrap; /* Mostrar saltos de línea */
+                        margin: 20px;
+                    }
+                </style>
+            </head>
+            <body>
+                <h1>Daily Log</h1>
+                <div>${dailyLog || "No entries available."}</div> <!-- Mostrar el log acumulado -->
+           
+    `;
+
+    // Escribir el contenido en la ventana recién abierta
+    logWindow.document.open();
+    logWindow.document.write(logContent);
+    logWindow.document.close();
+}
+
+// Desactivar flechas para inputs al cargar la página
+document.addEventListener("DOMContentLoaded", () => {
+  // Desactivar flechas para todos los inputs actuales con placeholder="Cost"
+  document.querySelectorAll("input[placeholder='Cost']").forEach(disableArrowKeys);
+
+  // Desactivar flechas para campos específicos: Labor Cost, Mileage Cost y R&R
+  ["laborCost", "mileageCost", "rrCost"].forEach((id) => {
+    const input = document.getElementById(id);
+    if (input) {
+      disableArrowKeys(input);
+    }
+  });
+
+  // Desactivar flechas para nuevos inputs dinámicos al agregar filas
+  const addButtons = ["svc", "ctr"];
+  addButtons.forEach((tableId) => {
+    document
+      .querySelector(`button[onclick="addRow('${tableId}')"]`)
+      .addEventListener("click", () => {
+        setTimeout(() => {
+          const newCostInputs = document.querySelectorAll(`#${tableId}Table tbody input[placeholder='Cost']`);
+          newCostInputs.forEach(disableArrowKeys); // Aplicar lógica a nuevos inputs
+        }, 50); // Breve retraso para asegurar que la fila ya se haya agregado
+      });
+  });
+});
+
+function disableArrowKeys(input) {
+  input.addEventListener("keydown", (event) => {
+    if (event.key === "ArrowUp" || event.key === "ArrowDown") {
+      event.preventDefault(); // Bloquear el incremento/decremento
+    }
+  });
+}
+
+//Cambiar comportamiento tecla Tab para inputs de las tablas SVC y CTR
+document.addEventListener("DOMContentLoaded", () => {
+  configureColumnTabbing("#svcTable");
+  configureColumnTabbing("#ctrTable");
+});
+
+function configureColumnTabbing(tableSelector) {
+  const table = document.querySelector(tableSelector);
+
+  // Delegación de eventos para capturar la tecla Tab
+  table.addEventListener("keydown", (event) => {
+    if (event.key === "Tab") {
+      event.preventDefault(); // Evitar comportamiento predeterminado
+
+      // Agrupar inputs por columna
+      const columns = [];
+      const rows = Array.from(table.querySelectorAll("tbody tr"));
+      rows.forEach(row => {
+        Array.from(row.children).forEach((cell, columnIndex) => {
+          columns[columnIndex] = columns[columnIndex] || [];
+          const input = cell.querySelector("input");
+          if (input) columns[columnIndex].push(input);
+        });
+      });
+
+      // Crear una lista ordenada por columna y luego por filas dentro de cada columna
+      const orderedInputs = columns.flat(); // Los elementos están en orden columna por columna
+
+      // Identificar el índice actual en la lista ordenada
+      const currentInput = event.target;
+      const currentIndex = orderedInputs.indexOf(currentInput);
+
+      // Determinar el próximo elemento según Shift
+      const nextIndex = event.shiftKey ? currentIndex - 1 : currentIndex + 1;
+      if (orderedInputs[nextIndex]) {
+        orderedInputs[nextIndex].focus();
+      }
+    }
+  });
+}
+
+
+// Registrar un Comp Quote Request
+function registerCompQuote() {
+    compQuoteRequests = parseInt(localStorage.getItem("compQuoteRequests")) || 0;
+
+    // Incrementar el contador y guardarlo en localStorage
+    compQuoteRequests++;
+    localStorage.setItem("compQuoteRequests", compQuoteRequests);
+
+    console.log(`Comp Quote Request registrado. Total ahora: ${compQuoteRequests}`);
+}
+// Registrar una aprobación SVC
+function registerSvcApproval(amount) {
+    svcApprovals = parseInt(localStorage.getItem("svcApprovals")) || 0;
+    svcTotalAmount = parseFloat(localStorage.getItem("svcTotalAmount")) || 0;
+
+    svcApprovals++;
+    svcTotalAmount += parseFloat(amount);
+    totalRepair = svcTotalAmount + ctrTotalAmount;
+
+    localStorage.setItem("svcApprovals", svcApprovals);
+    localStorage.setItem("svcTotalAmount", svcTotalAmount.toFixed(2));
+    localStorage.setItem("totalRepair", totalRepair.toFixed(2));
+}
+// Registrar una aprobación CTR
+function registerCtrApproval(amount) {
+    ctrApprovals = parseInt(localStorage.getItem("ctrApprovals")) || 0;
+    ctrTotalAmount = parseFloat(localStorage.getItem("ctrTotalAmount")) || 0;
+
+    ctrApprovals++;
+    ctrTotalAmount += parseFloat(amount);
+    totalRepair = svcTotalAmount + ctrTotalAmount;
+
+    localStorage.setItem("ctrApprovals", ctrApprovals);
+    localStorage.setItem("ctrTotalAmount", ctrTotalAmount.toFixed(2));
+    localStorage.setItem("totalRepair", totalRepair.toFixed(2));
+}
+function getDailySummary() {
+    // Obtén el nombre del agente directamente del DOM
+    const selectedAgent = document.getElementById("agentName")?.textContent || "Unknown Agent"; // Usa el contenido del elemento o un valor por defecto
+
+    // Recupera datos adicionales desde localStorage
+    const claimsProcessed = parseInt(localStorage.getItem("claimsProcessed")) || 0;
+    const compQuoteRequests = parseInt(localStorage.getItem("compQuoteRequests")) || 0;
+    const svcApprovals = parseInt(localStorage.getItem("svcApprovals")) || 0;
+    const svcTotalAmount = parseFloat(localStorage.getItem("svcTotalAmount")) || 0;
+    const ctrApprovals = parseInt(localStorage.getItem("ctrApprovals")) || 0;
+    const ctrTotalAmount = parseFloat(localStorage.getItem("ctrTotalAmount")) || 0;
+    const totalRepair = svcTotalAmount + ctrTotalAmount;
+
+    // Generar y devolver el resumen
+    return `=== DAILY SUMMARY ===
+Agent: ${selectedAgent}
+Claims processed: ${claimsProcessed}
+Comp quote requested: ${compQuoteRequests}
+SVC approvals: ${svcApprovals} | Total amount: $${svcTotalAmount.toFixed(2)}
+CTR approvals: ${ctrApprovals} | Total amount: $${ctrTotalAmount.toFixed(2)}
+Total repair: $${totalRepair.toFixed(2)} 
+=== CLAIM DETAILS ===\n\n`;
+
+}
+
+
+function updateRepairPercentage() {
+  const previousClaims = parseFloat(document.getElementById('previousClaims').value) || 0;
+  const applianceValue = parseFloat(document.getElementById('applianceValue').value) || 0;
+
+  // Calcular el % de LOL basado en Previous Claims
+  const repairPercentage = applianceValue > 0 ? (previousClaims / applianceValue) * 100 : 0;
+
+  // Mostrar el resultado en el elemento <p>
+  document.getElementById('repairResults').textContent = `${Math.round(repairPercentage)}%`;
+}
+
+// Función para agregar o actualizar filas dinámicamente
+// Referencias a los elementos del DOM
+const copyTableButton = document.getElementById('copyTableButton');
+const authInput = document.getElementById('authNumber');
+const svcInput = document.getElementById('svcName');
+const dataTable = document.getElementById('dataTable').getElementsByTagName('tbody')[0];
+// Objeto de registro para gestionar filas únicas por clave
+const rowRegistry = {};
+// Función para agregar o actualizar filas dinámicamente
+// Función principal para manejar la tabla
+function updateTable() {
+    const authValue = authInput.value.trim(); // Valor de Authorization
+    const svcValue = svcInput.value.trim(); // Valor de SVC Name
+
+    console.log("Intentando actualizar fila con valores:", { authValue, svcValue });
+
+    // Validar que los campos no estén vacíos
+    if (!authValue || !svcValue) {
+        console.log("Campos vacíos, nada que actualizar.");
+        return; // No hacemos nada si los campos están vacíos
+    }
+
+    // Capturar valores de SVC y CTR actualizados
+    const svcSubtotalElement = document.getElementById('svcSubtotal');
+    const ctrSubtotalElement = document.getElementById('ctrSubtotal');
+
+    if (!svcSubtotalElement || !ctrSubtotalElement) {
+        console.error("Los elementos svcSubtotal o ctrSubtotal no están disponibles en el DOM.");
+        return;
+    }
+
+    const svcTotal = parseFloat(svcSubtotalElement.textContent.replace(/[^0-9.]/g, '')) || 0;
+    const ctrTotal = parseFloat(ctrSubtotalElement.textContent.replace(/[^0-9.]/g, '')) || 0;
+
+    const svcTotalValue = `$${svcTotal.toFixed(2)}`;
+    const ctrTotalValue = `$${ctrTotal.toFixed(2)}`;
+    const differenceValue = `$${(svcTotal - ctrTotal).toFixed(2)}`;
+
+    console.log("Valores capturados para la tabla:", {
+        svcTotal: svcTotalValue,
+        ctrTotal: ctrTotalValue,
+        difference: differenceValue,
+    });
+
+    // Eliminar fila previa si ya existe en el registro
+    if (rowRegistry[authValue]) {
+        console.log("Eliminando fila existente con Authorization:", authValue);
+        rowRegistry[authValue].remove();
+        delete rowRegistry[authValue];
+    }
+
+    // Crear nueva fila
+    const newRow = dataTable.insertRow();
+    rowRegistry[authValue] = newRow; // Registrar nueva fila en el objeto
+
+    // Lista de valores para la fila
+    const cellValues = [
+    authValue.slice(0, 7),  // SP Number RFA
+    "",                     // Date RFA Submitted
+    new Date().toLocaleDateString(),  // Date Assigned to Agent
+    agentName,              // Agent Name (rellenado dinámicamente)
+    "",                     // Status
+    authValue.slice(-5),    // Authorization
+    new Date().toLocaleDateString(),  // Current Date
+    svcValue,               // SVC Name
+    "",                     // Comments
+    "",                     // Req Comp
+    "T",                    // Date Completed
+    "NO",                   // Push Back (Asegurado)
+    "",                     // Reason
+    "0",                    // Times Push Back precargado
+    svcTotalValue,          // SVC Cost
+    ctrTotalValue,          // CTR Cost
+    differenceValue,        // Difference calculado
+    "",                     // Amount Approved (en blanco por defecto)
+    "true"                  // Done
+];
+
+
+
+    // Crear celdas con inputs editables
+    cellValues.forEach((value, index) => {
+        const cell = newRow.insertCell();
+        const input = document.createElement("input");
+        input.type = "text";
+        input.value = value;
+        input.style.width = "100%";
+        cell.appendChild(input);
+
+        console.log(`Celda ${index} añadida con valor: ${value}`);
+    });
+
+    console.log("Fila añadida o actualizada correctamente:", {
+        Authorization: authValue,
+        svcTotal: svcTotalValue,
+        ctrTotal: ctrTotalValue,
+        difference: differenceValue,
+    });
+}
+// **Implementación en tiempo real con MutationObserver**
+function setupRealtimeUpdates() {
+    const svcSubtotalElement = document.getElementById('svcSubtotal');
+    const ctrSubtotalElement = document.getElementById('ctrSubtotal');
+
+    if (!svcSubtotalElement || !ctrSubtotalElement) {
+        console.error("Los elementos svcSubtotal o ctrSubtotal no están disponibles para la observación.");
+        return;
+    }
+
+    const observer = new MutationObserver(() => {
+        console.log("Cambio detectado en SVC o CTR. Actualizando tabla...");
+        // Al detectar cambios, actualizamos la tabla para reflejar los nuevos valores
+        updateTable();
+    });
+
+    // Configuración del MutationObserver para detectar cambios en los valores de subtotales
+    observer.observe(svcSubtotalElement, { childList: true, characterData: true });
+    observer.observe(ctrSubtotalElement, { childList: true, characterData: true });
+
+    console.log("Se han configurado las actualizaciones en tiempo real.");
+}
+// Inicializar las actualizaciones en tiempo real
+setupRealtimeUpdates();
+// Función para copiar datos de la tabla sin encabezados
+copyTableButton.addEventListener('click', function () {
+    console.log("Copiando datos de la tabla...");
+    let textToCopy = "";
+    const rows = dataTable.querySelectorAll("tr");
+
+    rows.forEach(row => {
+        const cells = row.querySelectorAll("td input");
+        let rowText = Array.from(cells).map(input => input.value).join("\t"); // Separa por tabulación
+        textToCopy += rowText + "\n";
+    });
+
+    navigator.clipboard.writeText(textToCopy).then(() => {
+        console.log("Datos copiados al portapapeles.");
+        const originalText = copyTableButton.textContent; // Guarda el texto original del botón
+        copyTableButton.textContent = "Copied!"; // Cambia el texto del botón
+        setTimeout(() => {
+            copyTableButton.textContent = originalText; // Regresa al texto original después de 3 segundos
+        }, 3000); // Tiempo de espera: 3 segundos
+    }).catch(err => {
+        console.error("Error al copiar datos: ", err);
+    });
+});
+// Detectar cambios en los inputs y agregar filas automáticamente
+authInput.addEventListener('blur', updateTable);
+svcInput.addEventListener('blur', updateTable);
+function clearDateCompletedOnCompRequest() {
+    const rows = document.querySelectorAll("#dataTable tbody tr");
+
+    rows.forEach(row => {
+        const dateCompletedCell = row.querySelector("td:nth-child(11) input"); // Date Completed
+
+        // ✅ Eliminar "T" si existe
+        if (dateCompletedCell && dateCompletedCell.value.trim() === "T") {
+            dateCompletedCell.value = ""; // Dejar vacío al solicitar el comp
+        }
+    });
+
+    console.log("✅ 'Date Completed' eliminado (vacío) al solicitar el comp.");
+}
+function clearDoneOnCompRequest() {
+    const rows = document.querySelectorAll("#dataTable tbody tr");
+
+    rows.forEach(row => {
+        const doneCell = row.querySelector("td:nth-child(19) input"); // Done
+
+        // ✅ Si Done es "true", eliminarlo cuando se solicita el comp
+        if (doneCell && doneCell.value.trim() === "true") {
+            doneCell.value = ""; // Vacío al solicitar el comp
+        }
+    });
+
+    console.log("✅ 'Done' borrado en todas las filas al solicitar el comp.");
+}
+function updateTableOnButtonClick() {
+    const rows = document.querySelectorAll("#dataTable tbody tr");
+
+    rows.forEach(row => {
+        const reqCompCell = row.querySelector("td:nth-child(10) input[type='text']"); // Req Comp
+        const commentsCell = row.querySelector("td:nth-child(9) input"); // Comments
+        const statusCell = row.querySelector("td:nth-child(5) input"); // Status
+        const doneCell = row.querySelector("td:nth-child(19) input"); // Done
+
+        // Bandera de modificación
+        let rowModified = false;
+
+        // ✅ Req Comp: Si está vacío, asignamos "true"
+        if (reqCompCell && reqCompCell.value.trim() === "") {
+            reqCompCell.value = "true";
+            rowModified = true; // Marcamos que hubo modificación
+        }
+
+        // ✅ Comments: Si está vacío, asignamos "CQ Requested"
+        if (commentsCell && commentsCell.value.trim() === "") {
+            commentsCell.value = "CQ Requested";
+            rowModified = true; // Marcamos que hubo modificación
+        }
+
+        // ✅ Status: Si está vacío, asignamos "Comp Quote -Pending"
+        if (statusCell && statusCell.value.trim() === "") {
+            statusCell.value = "Comp Quote -Pending";
+            rowModified = true; // Marcamos que hubo modificación
+        }
+
+        // ✅ Done: Queda vacío si hubo modificaciones, "true" por defecto si no
+        if (doneCell) {
+            doneCell.value = rowModified ? "" : "true"; // Aplicamos lógica inversa
+        }
+    });
+
+    console.log("✅ Todas las filas fueron procesadas correctamente con 'Comp Quote - Pending' en Status.");
+}
+// Función para normalizar cadenas de texto
+function normalizeString(str) {
+  return str
+    .toLowerCase() // Convertir a minúsculas
+    .replace(/\s+/g, ' ') // Reemplazar múltiples espacios por uno solo
+    .trim(); // Eliminar espacios al principio y al final
+}
+          
+</script>
+
+</body>
+</html> 

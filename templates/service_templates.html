@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Service Power Templates</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+  <div class="container">
+    <h2>Service Power Templates</h2>
+    <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+      <thead>
+        <tr style="background-color: #f4f4f4; text-align: left;">
+          <th style="border: 1px solid #ddd; padding: 8px;">Template Notes</th>
+          <th style="border: 1px solid #ddd; padding: 8px;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="border: 1px solid #ddd; padding: 8px;">
+            HELLO, YOU'RE APPROVED TO ORDER THE PART FOR REPAIR. AUTH HAS BEEN UPDATED TO $ FOR PART AND LABOR, THANK YOU.
+          </td>
+          <td style="border: 1px solid #ddd; padding: 8px;">
+            <button onclick="copyToClipboard(this)">Copy</button>
+          </td>
+        </tr>
+        <tr>
+          <td style="border: 1px solid #ddd; padding: 8px;">
+            HELLO, YOU'RE APPROVED TO ORDER PARTS FOR REPAIR. AUTH HAS BEEN UPDATED TO $ FOR PARTS AND LABOR, THANK YOU.
+          </td>
+          <td style="border: 1px solid #ddd; padding: 8px;">
+            <button onclick="copyToClipboard(this)">Copy</button>
+          </td>
+        </tr>
+        <tr>
+          <td style="border: 1px solid #ddd; padding: 8px;">
+            HELLO, YOU'RE APPROVED TO ORDER PARTS FOR REPAIR. AUTH HAS BEEN UPDATED TO $ FOR PARTS. THIS IS A REWORK, THEREFORE LABOR WILL NOT BE AUTHORIZED. THANK YOU.
+          </td>
+          <td style="border: 1px solid #ddd; padding: 8px;">
+            <button onclick="copyToClipboard(this)">Copy</button>
+          </td>
+        </tr>
+        <tr>
+          <td style="border: 1px solid #ddd; padding: 8px;">
+            HELLO, WE'VE ORDERED PARTS FOR OUR MUTUAL CUSTOMER. AUTH HAS BEEN UPDATED TO $ FOR LABOR, THANK YOU.
+          </td>
+          <td style="border: 1px solid #ddd; padding: 8px;">
+            <button onclick="copyToClipboard(this)">Copy</button>
+          </td>
+        </tr>
+        <tr>
+          <td style="border: 1px solid #ddd; padding: 8px;">
+            HELLO, WE ARE NOT GOING TO PROCEED WITH THIS REPAIR. PLEASE CLOSE OUT FOR THE $____ DIAGNOSIS FEE, THANK YOU.
+          </td>
+          <td style="border: 1px solid #ddd; padding: 8px;">
+            <button onclick="copyToClipboard(this)">Copy</button>
+          </td>
+        </tr>
+        <tr>
+          <td style="border: 1px solid #ddd; padding: 8px;">
+            HELLO, PLEASE PROVIDE PROPER DIAG FOR REVIEW (WHAT IS THE FAILURE? WHAT IS HAPPENING WITH THESE PARTS?) WILL REVIEW ONCE SUBMITTED, THANK YOU!
+          </td>
+          <td style="border: 1px solid #ddd; padding: 8px;">
+            <button onclick="copyToClipboard(this)">Copy</button>
+          </td>
+        </tr>
+        <tr>
+          <td style="border: 1px solid #ddd; padding: 8px;">
+            HELLO, THERE ARE NO PARTS LISTED FOR THIS ESTIMATE. PLEASE ADD PARTS AND RESUBMIT FOR REVIEW, THANK YOU.
+          </td>
+          <td style="border: 1px solid #ddd; padding: 8px;">
+            <button onclick="copyToClipboard(this)">Copy</button>
+          </td>
+        </tr>
+        <tr>
+          <td style="border: 1px solid #ddd; padding: 8px;">
+            HELLO, PLEASE PROVIDE THE MODEL AND SERIAL, THIS INFORMATION IS REQUIRED FOR ADJUDICATION PURPOSES, THANK YOU.
+          </td>
+          <td style="border: 1px solid #ddd; padding: 8px;">
+            <button onclick="copyToClipboard(this)">Copy</button>
+          </td>
+        </tr>
+        <tr>
+          <td style="border: 1px solid #ddd; padding: 8px;">
+            HELLO, PLEASE CONFIRM PART NUMBERS AND RESUBMIT. THANK YOU (part #, part name, price AND part #, part name, price).
+          </td>
+          <td style="border: 1px solid #ddd; padding: 8px;">
+            <button onclick="copyToClipboard(this)">Copy</button>
+          </td>
+        </tr>
+        <tr>
+          <td style="border: 1px solid #ddd; padding: 8px;">
+            HELLO, PLEASE PROVIDE THE TECHNICIAN'S FULL DIAGNOSIS REPORT REGARDING THE PARTS NEEDED, ALSO INCLUDE THE MODEL AND SERIAL. THIS INFORMATION IS REQUIRED FOR ADJUDICATION PURPOSES. THANK YOU.
+          </td>
+          <td style="border: 1px solid #ddd; padding: 8px;">
+            <button onclick="copyToClipboard(this)">Copy</button>
+          </td>
+        </tr>
+        <tr>
+          <td style="border: 1px solid #ddd; padding: 8px;">
+            HELLO, WE HAVE NOTICED YOU ORDERED PARTS & ALREADY SHOW AS DELIVERED, YOUR ESTIMATE HAS BEEN APPROVED FOR LABOR ONLY: $ XXX.XX, PLEASE PROCEED WITH THE REPAIRS, THANK YOU.
+          </td>
+          <td style="border: 1px solid #ddd; padding: 8px;">
+            <button onclick="copyToClipboard(this)">Copy</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    // Función para copiar el texto de una fila al portapapeles
+    function copyToClipboard(button) {
+      // Obtener el texto de la celda correspondiente
+      const textToCopy = button.parentElement.previousElementSibling.innerText;
+
+      // Copiar el texto al portapapeles
+      navigator.clipboard.writeText(textToCopy).then(() => {
+        // Mostrar una alerta "Copied" al usuario
+        const originalText = button.innerText;
+        button.innerText = "Copied!";
+        setTimeout(() => {
+          button.innerText = originalText; // Restaurar el texto del botón después de 2 segundos
+        }, 2000);
+      }).catch(err => {
+        console.error('Error copying text: ', err);
+      });
+    }
+  </script>
+</body>
+</html>

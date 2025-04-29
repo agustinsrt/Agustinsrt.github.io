@@ -1,0 +1,260 @@
+/* Estilos Generales */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+
+/* Estilos generales */
+body {
+    font-family: 'Roboto', Arial, sans-serif; /* Aplica Roboto como fuente principal */
+    font-weight: 400; /* Regular para el texto normal */
+    color: #333333; /* Gris oscuro para el texto */
+    font-size: 14px;
+}
+
+button {
+    font-family: 'Roboto', Arial, sans-serif; /* Asegura que los botones usen la misma fuente */
+    font-weight: bold; /* Negritas para destacar el texto */
+}
+
+h2, h3 {
+  text-align: center;
+  margin-bottom: 10px;
+  color: #333333;
+}
+
+label {
+  font-weight: bold;
+  display: inline-block;
+  width: 120px;
+  color: #555555; /* Gris medio */
+}
+
+input, textarea, button {
+  margin: 2px 0;
+  padding: 5px;
+  box-sizing: border-box;
+  border-radius: 5px; /* Bordes redondeados */
+}
+
+/* Input y Textarea */
+input[type="text"], input[type="number"], textarea {
+  width: calc(100% - 130px);
+  height: 30px; /* Ajustamos la altura para uniformidad */
+  border: 1px solid #cccccc; /* Gris claro en bordes */
+  background-color: #ffffff; /* Fondo blanco */
+  padding: 5px 10px;
+}
+
+input[type="number"]::-webkit-inner-spin-button, 
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Botones */
+button {
+  font-size: 14px;
+  padding: 8px 12px;
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: background-color 0.3s, transform 0.2s;
+}
+
+/* Botón Naranja */
+button.orange {
+  background-color: #fd8b50; /* Naranja */
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  font-size: 14px;
+  font-weight: bold; /* Texto en negritas */
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s;
+}
+
+button.orange:hover {
+  background-color: #d17905; /* Naranja más oscuro al pasar el mouse */
+  transform: scale(1.05); /* Ligero escalado al hover */
+}
+
+/* Botón Gris Oscuro */
+button.dark-gray {
+  background-color: #555555; /* Gris oscuro */
+  color: white;
+}
+
+button.dark-gray:hover {
+  background-color: #444444; /* Más oscuro al pasar el mouse */
+}
+
+/* Alineación de botones */
+button:hover {
+  transform: scale(1.05); /* Animación al pasar el mouse */
+}
+
+/* Checkbox y Radios */
+input[type="radio"], input[type="checkbox"] {
+  width: auto;
+  margin: 0 5px;
+  transform: scale(1.2); /* Hacemos más visibles los elementos */
+}
+
+/* Tablas */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 10px;
+  background-color: #ffffff;
+  border-radius: 5px; /* Bordes redondeados */
+  overflow: hidden; /* Aplica los bordes redondeados correctamente */
+}
+
+th, td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+  font-size: 13px;
+}
+
+th {
+  background-color: #f4f4f4; /* Encabezado gris claro */
+  color: #333333;
+}
+
+.subtotal {
+  font-weight: bold;
+  text-align: right;
+  color: #555555; /* Gris medio */
+}
+
+/* Botón flotante */
+.floating-menu {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 1000;
+}
+
+.menu-button {
+  background-color: #FFA500; /* Naranja */
+  color: white;
+  padding: 10px 15px;
+  font-size: 14px;
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+.menu-button:hover {
+  background-color: #e59400;
+}
+
+/* Menú desplegable */
+.dropdown-content {
+  display: none;
+  position: absolute;
+  top: 35px;
+  left: 0;
+  background-color: #f9f9f9;
+  min-width: 200px;
+  box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+  z-index: 1001;
+  border-radius: 5px;
+}
+
+.dropdown-content a {
+  color: black;
+  padding: 10px 16px;
+  text-decoration: none;
+  display: block;
+}
+
+.dropdown-content a:hover {
+  background-color: #ddd;
+}
+
+/* Mostrar dropdown */
+.floating-menu:hover .dropdown-content,
+.dropdown-content:hover {
+  display: block;
+}
+
+/* Submenús */
+.dropdown-submenu {
+  position: relative;
+}
+
+.dropdown-submenu > .submenu-content {
+  display: none;
+  position: absolute;
+  left: 100%;
+  top: 0;
+  background-color: #f9f9f9;
+  min-width: 200px;
+  box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+  z-index: 2;
+  border-radius: 5px;
+}
+
+.dropdown-submenu > .submenu-content a {
+  color: black;
+  padding: 10px 16px;
+  text-decoration: none;
+  display: block;
+}
+
+.dropdown-submenu > .submenu-content a:hover {
+  background-color: #ddd;
+}
+
+.dropdown-submenu:hover > .submenu-content {
+  display: block;
+}
+
+/* Resultados */
+#results {
+  width: 100%;
+  height: auto;
+  white-space: pre-wrap;
+  font-family: monospace;
+  margin-top: 10px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  overflow-y: auto;
+  box-sizing: border-box;
+  background-color: #ffffff; /* Fondo blanco para resultados */
+  border-radius: 5px; /* Bordes redondeados */
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+}
+body {
+  background: linear-gradient(135deg, #2a2f42, #2a2f42); /* Degradado entre dos tonos oscuros */
+  margin: 0;
+  padding: 0;
+}
+
+button.saved {
+  background-color: #555555; /* Gris oscuro */
+  color: white; /* Texto blanco para contraste */
+  cursor: not-allowed; /* Indica que ya no se puede oprimir */
+  opacity: 0.7; /* Aplica un efecto visual de "deshabilitado" */
+}
+/* Fondo del formulario */
+.container {
+  max-width: 600px;
+  margin: auto;
+  background-color: #f8f8fa; /* Gris oscuro con tono azul */
+  border-radius: 5px; /* Bordes redondeados para darle estilo */
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Sombra suave */
+  padding: 20px; /* Espaciado interno */
+}
+
+/* Fondo del formulario extended mfg */
+.container1 {
+  max-width: 700px;
+  margin: auto;
+  background-color: #f8f8fa; /* Gris oscuro con tono azul */
+  border-radius: 5px; /* Bordes redondeados para darle estilo */
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Sombra suave */
+  padding: 20px; /* Espaciado interno */
+}

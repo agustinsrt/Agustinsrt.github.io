@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MFG Extended Coverage</title>
+  <link rel="stylesheet" type="text/css" href="styles.css">
+</head>
+<body>
+  <div class="container1">
+    <h2>MFG Extended Coverage</h2>
+    <!-- Pestañas -->
+    <div class="tabs">
+      <button class="orange" onclick="showTab(event, 'Refrigerators')">Refrigerators</button>
+      <button class="orange" onclick="showTab(event, 'Washers')">Washers</button>
+      <button class="orange" onclick="showTab(event, 'Dryers')">Dryers</button>
+      <button class="orange" onclick="showTab(event, 'Dishwashers')">Dishwashers</button>
+      <button class="orange" onclick="showTab(event, 'Microwaves')">Microwaves</button>
+      <button class="orange" onclick="showTab(event, 'Cooking')">Cooking Appliances</button>
+    </div>
+
+    <!-- Refrigerators Tab -->
+    <div id="Refrigerators" class="tab-content">
+      <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+        <thead>
+          <tr style="background-color: #f4f4f4; text-align: left;">
+            <th style="border: 1px solid #ddd; padding: 8px;">Manufacturer</th>
+            <th style="border: 1px solid #ddd; padding: 8px;">Warranty Details</th>
+            <th style="border: 1px solid #ddd; padding: 8px;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="border: 1px solid #ddd; padding: 8px;">LG</td>
+            <td style="border: 1px solid #ddd; padding: 8px;">
+              Five years - Sealed refrigerating system (labor included)<br>
+              Five years - Compressor (labor included)<br>
+              6th-10th year - Linear/Inverter compressor (parts only)
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px;">
+              <button  onclick="copyToClipboard(this)">Copy</button>
+            </td>
+          </tr>
+          <tr>
+            <td style="border: 1px solid #ddd; padding: 8px;">Samsung</td>
+            <td style="border: 1px solid #ddd; padding: 8px;">
+              Five years - Parts and labor (sealed system)<br>
+              Five years - Digital inverter compressor (labor included)<br>
+              Ten years - Digital inverter compressor (parts only)
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px;">
+              <button onclick="copyToClipboard(this)">Copy</button>
+            </td>
+          </tr>
+          <tr>
+            <td style="border: 1px solid #ddd; padding: 8px;">Sub Zero</td>
+            <td style="border: 1px solid #ddd; padding: 8px;">
+              Five years - Sealed refrigeration system (parts and labor)<br>
+              Twelve years - Sealed refrigeration system (parts only)
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px;">
+              <button onclick="copyToClipboard(this)">Copy</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Washers Tab -->
+    <div id="Washers" class="tab-content" style="display: none;">
+      <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+        <thead>
+          <tr style="background-color: #f4f4f4; text-align: left;">
+            <th style="border: 1px solid #ddd; padding: 8px;">Manufacturer</th>
+            <th style="border: 1px solid #ddd; padding: 8px;">Warranty Details</th>
+            <th style="border: 1px solid #ddd; padding: 8px;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="border: 1px solid #ddd; padding: 8px;">Maytag</td>
+            <td style="border: 1px solid #ddd; padding: 8px;">
+              Ten years - Direct drive motor (parts only)<br>
+              Ten years - Wash basket (labor excluded)
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px;">
+              <button onclick="copyToClipboard(this)">Copy</button>
+            </td>
+          </tr>
+          <tr>
+            <td style="border: 1px solid #ddd; padding: 8px;">Electrolux</td>
+            <td style="border: 1px solid #ddd; padding: 8px;">
+              One year - Parts and labor<br>
+              Ten years - Wash tub drive motor (excluding labor)
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px;">
+              <button onclick="copyToClipboard(this)">Copy</button>
+            </td>
+          </tr>
+          <tr>
+            <td style="border: 1px solid #ddd; padding: 8px;">Samsung</td>
+            <td style="border: 1px solid #ddd; padding: 8px;">
+              Three years - Stainless tub (part only)<br>
+              Ten years - Digital inverter motor (part only)
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px;">
+              <button onclick="copyToClipboard(this)">Copy</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+ 
+    <!-- Dryers Tab -->
+    <div id="Dryers" class="tab-content" style="display: none;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+          <thead>
+            <tr style="background-color: #f4f4f4; text-align: left;">
+              <th style="border: 1px solid #ddd; padding: 8px;">Manufacturer</th>
+              <th style="border: 1px solid #ddd; padding: 8px;">Warranty Details</th>
+              <th style="border: 1px solid #ddd; padding: 8px;">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="border: 1px solid #ddd; padding: 8px;">LG</td>
+              <td style="border: 1px solid #ddd; padding: 8px;">
+                One year - Limited warranty (parts & labor, inactive)<br>
+                Three years - Dryer drum (parts only)
+              </td>
+              <td style="border: 1px solid #ddd; padding: 8px;">
+                <button onclick="copyToClipboard(this)">Copy</button>
+              </td>
+            </tr>
+            <tr>
+              <td style="border: 1px solid #ddd; padding: 8px;">Electrolux</td>
+              <td style="border: 1px solid #ddd; padding: 8px;">
+                One year - All parts, including labor<br>
+                Second year - Limited warranty (parts only)
+              </td>
+              <td style="border: 1px solid #ddd; padding: 8px;">
+                <button onclick="copyToClipboard(this)">Copy</button>
+              </td>
+            </tr>
+            <tr>
+              <td style="border: 1px solid #ddd; padding: 8px;">Hotpoint</td>
+              <td style="border: 1px solid #ddd; padding: 8px;">
+                Five years - Additional MFG coverage (all parts & labor included)<br>
+                Ten years - Motor, if defective (labor not included)
+              </td>
+              <td style="border: 1px solid #ddd; padding: 8px;">
+                <button onclick="copyToClipboard(this)">Copy</button>
+              </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  
+      <!-- Dishwashers Tab -->
+      <div id="Dishwashers" class="tab-content" style="display: none;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+          <thead>
+            <tr style="background-color: #f4f4f4; text-align: left;">
+              <th style="border: 1px solid #ddd; padding: 8px;">Manufacturer</th>
+              <th style="border: 1px solid #ddd; padding: 8px;">Warranty Details</th>
+              <th style="border: 1px solid #ddd; padding: 8px;">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="border: 1px solid #ddd; padding: 8px;">LG</td>
+              <td style="border: 1px solid #ddd; padding: 8px;">
+                Two years - Main control board, dishwasher racks, door liner, tub (labor excluded)<br>
+                Ten years - Direct drive motor (parts only)
+              </td>
+              <td style="border: 1px solid #ddd; padding: 8px;">
+                <button onclick="copyToClipboard(this)">Copy</button>
+              </td>
+            </tr>
+            <tr>
+              <td style="border: 1px solid #ddd; padding: 8px;">Bosch</td>
+              <td style="border: 1px solid #ddd; padding: 8px;">
+                One year - Entire appliance (parts & labor)<br>
+                Second to fifth year - Microprocessor or PCB (parts only)<br>
+                Second to fifth year - Racks (parts only)<br>
+                Lifetime - Rust-through on inner tub liner (parts only)
+              </td>
+              <td style="border: 1px solid #ddd; padding: 8px;">
+                <button onclick="copyToClipboard(this)">Copy</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <!-- Microwaves Tab -->
+      <div id="Microwaves" class="tab-content" style="display: none;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+          <thead>
+            <tr style="background-color: #f4f4f4; text-align: left;">
+              <th style="border: 1px solid #ddd; padding: 8px;">Manufacturer</th>
+              <th style="border: 1px solid #ddd; padding: 8px;">Warranty Details</th>
+              <th style="border: 1px solid #ddd; padding: 8px;">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="border: 1px solid #ddd; padding: 8px;">KitchenAid</td>
+              <td style="border: 1px solid #ddd; padding: 8px;">
+                Third to fifth year - Limited warranty on electric element, touch pad, and microprocessor (labor excluded)<br>
+                Second to tenth year - Cavity/inner door, if part rusts through due to defects
+              </td>
+              <td style="border: 1px solid #ddd; padding: 8px;">
+                <button onclick="copyToClipboard(this)">Copy</button>
+              </td>
+            </tr>
+            <tr>
+              <td style="border: 1px solid #ddd; padding: 8px;">Hisense</td>
+              <td style="border: 1px solid #ddd; padding: 8px;">
+                Two years - Limited warranty (parts & labor, inactive)
+              </td>
+              <td style="border: 1px solid #ddd; padding: 8px;">
+                <button onclick="copyToClipboard(this)">Copy</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+  
+      <!-- Cooking Appliances Tab -->
+      <div id="Cooking" class="tab-content" style="display: none;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+          <thead>
+            <tr style="background-color: #f4f4f4; text-align: left;">
+              <th style="border: 1px solid #ddd; padding: 8px;">Manufacturer</th>
+              <th style="border: 1px solid #ddd; padding: 8px;">Warranty Details</th>
+              <th style="border: 1px solid #ddd; padding: 8px;">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="border: 1px solid #ddd; padding: 8px;">Jenn-Air / KitchenAid</td>
+              <td style="border: 1px solid #ddd; padding: 8px;">
+                Two years - Limited warranty (parts & labor, inactive)<br>
+                Third to fifth year - Electric element, touch pad, microprocessor, glass ceramic cooktop, electronic controls, magnetron tube, sealed gas burners (labor excluded)
+              </td>
+              <td style="border: 1px solid #ddd; padding: 8px;">
+                <button onclick="copyToClipboard(this)">Copy</button>
+              </td>
+            </tr>
+            <tr>
+              <td style="border: 1px solid #ddd; padding: 8px;">Viking</td>
+              <td style="border: 1px solid #ddd; padding: 8px;">
+                Two years - Limited warranty (parts & labor)<br>
+                Six years - Sealed refrigeration system (parts & labor)<br>
+                Twelve years - Sealed refrigeration system (parts only)
+              </td>
+              <td style="border: 1px solid #ddd; padding: 8px;">
+                <button onclick="copyToClipboard(this)">Copy</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <script>
+        // Mostrar pestaña seleccionada
+        function showTab(event, tabId) {
+          const tabs = document.querySelectorAll('.tab-content');
+          tabs.forEach(tab => tab.style.display = 'none'); // Oculta todas las pestañas
+    
+          document.getElementById(tabId).style.display = 'block'; // Muestra la pestaña seleccionada
+    
+          const buttons = document.querySelectorAll('.tab-button');
+          buttons.forEach(button => button.classList.remove('active')); // Elimina la clase activa
+    
+          event.currentTarget.classList.add('active'); // Activa el botón seleccionado
+        }
+    
+        // Copiar contenido al portapapeles
+        function copyToClipboard(button) {
+          const textToCopy = button.parentElement.previousElementSibling.innerText;
+    
+          navigator.clipboard.writeText(textToCopy).then(() => {
+            const originalText = button.innerText;
+            button.innerText = "Copied!";
+            setTimeout(() => {
+              button.innerText = originalText; // Restaurar texto después de 2 segundos
+            }, 2000);
+          }).catch(err => console.error('Error copying text:', err));
+        }
+      </script>
+    

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    label {
+      display: block;
+      margin-bottom: 10px;
+    }
+    input[type="number"] {
+      margin-bottom: 15px;
+      padding: 5px;
+      font-size: 1em;
+    }
+    button {
+      margin-top: 10px;
+      padding: 10px 20px;
+      background-color: #0078D7;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #005a9e;
+    }
+  </style>
+</head>
+<body>
+  <h1>Admin Panel</h1>
+  <form id="configForm">
+    <label for="lessThanOneYearPercentage">Less Than One Year Percentage:</label>
+    <input type="number" id="lessThanOneYearPercentage" value="70" min="0" max="100" step="1" required>
+    
+    <label for="moreThanOneYearPercentage">More Than One Year Percentage:</label>
+    <input type="number" id="moreThanOneYearPercentage" value="60" min="0" max="100" step="1" required>
+
+    <button type="button" id="saveConfig">Save Configuration</button>
+  </form>
+
+  <script>
+    // Obtener y guardar configuraciones en el backend
+    document.getElementById("saveConfig").addEventListener("click", function () {
+      const lessThanOneYearPercentage = document.getElementById("lessThanOneYearPercentage").value;
+      const moreThanOneYearPercentage = document.getElementById("moreThanOneYearPercentage").value;
+
+      fetch("http://localhost:5000/config", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          lessThanOneYearPercentage: lessThanOneYearPercentage,
+          moreThanOneYearPercentage: moreThanOneYearPercentage
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        alert("Configuration saved successfully!");
+        console.log("Server Response:", data);
+      })
+      .catch(error => console.error("Error saving configuration:", error));
+    });
+  </script>
+</body>
+</html>

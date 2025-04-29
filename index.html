@@ -873,104 +873,49 @@ function updateRepairPercentageWithLOL() {
   const previousRepairs = parseFloat(document.getElementById('previousClaims').value) || 0;
   const applianceValue = parseFloat(document.getElementById('applianceValue').value) || 0;
 
-  if (applianceValue <= 0) {
-    console.warn("El valor del electrodoméstico (LOL Value) no es válido. Deteniendo la ejecución.");
-    document.getElementById('repairResults').textContent = "Enter a valid LOL Value to calculate.";
-    return;
-  }
+  // Calcular el porcentaje de Previous Repairs respecto al Appliance Value (LOL)
+  const repairPercentage = applianceValue > 0 ? (previousRepairs / applianceValue) * 100 : 0;
 
-  // Calcular el porcentaje de reparaciones previas respecto al valor del electrodoméstico
-  const repairPercentage = (previousRepairs / applianceValue) * 100;
-  console.log("Porcentaje de reparaciones calculado:", repairPercentage);
-
-  // Mostrar el resultado de manera clara y manejando valores inválidos
+  // Actualizar el contenido del elemento <p>
   document.getElementById('repairResults').textContent = `${Math.round(repairPercentage)}%`;
+
 }
 
-async function calculateRepairPercentage() {
-  console.log("Iniciando cálculo de reparación basado en valores dinámicos...");
+function calculateRepairPercentage() {
+  const svcTotal = Array.from(document.querySelectorAll('#svcTable tbody tr input[type="number"]'))
+    .reduce((sum, input) => sum + (parseFloat(input.value) || 0), 0);
+  const ctrTotal = Array.from(document.querySelectorAll('#ctrTable tbody tr input[type="number"]'))
+    .reduce((sum, input) => sum + (parseFloat(input.value) || 0), 0);
+  const previousClaims = parseFloat(document.getElementById('previousClaims').value) || 0;
+  const lolValue = parseFloat(document.getElementById('applianceValue').value) || 0;
 
-  // Obtener valores necesarios
-  const previousClaims = parseFloat(document.getElementById('previousClaims').value) || 0; // Labor
-  const lolValue = parseFloat(document.getElementById('applianceValue').value) || 0; // LOL
-
-  if (lolValue <= 0) {
-    console.warn("LOL Value está vacío o es inválido. Deteniendo el cálculo.");
-    document.getElementById('repairResults').textContent = "Enter a valid LOL Value to calculate.";
+  if (lolValue === 0) {
+    document.getElementById('repairResults').textContent = "Enter LOL Value to calculate.";
     return;
   }
 
-  // Calcular el porcentaje de reparación basado en LOL
-  const repairPercentage = (previousClaims / lolValue) * 100;
-  console.log("Porcentaje de reparación calculado:", repairPercentage);
+  const svcPercentage = ((svcTotal + previousClaims) / lolValue) * 100;
+  const ctrPercentage = ((ctrTotal + previousClaims) / lolValue) * 100;
 
-  try {
-    console.log("Consultando el backend para obtener configuraciones dinámicas...");
-    const response = await fetch("http://localhost:5000/config");
-    if (!response.ok) {
-      throw new Error(`Error en la respuesta del backend: ${response.statusText}`);
-    }
+  // Determina el más bajo
+  const lowerPercentage = Math.min(svcPercentage, ctrPercentage);
+  let finalRecommendation = "";
+  let color = "";
 
-    const data = await response.json();
-    const lessThanOneYearPercentage = parseFloat(data.lessThanOneYearPercentage);
-    const moreThanOneYearPercentage = parseFloat(data.moreThanOneYearPercentage);
-
-    if (isNaN(lessThanOneYearPercentage) || isNaN(moreThanOneYearPercentage)) {
-      console.error("Valores dinámicos obtenidos son inválidos:", {
-        lessThanOneYearPercentage,
-        moreThanOneYearPercentage,
-      });
-      document.getElementById('repairResults').textContent = "Error fetching dynamic percentages.";
-      return;
-    }
-
-    console.log("Configuraciones dinámicas obtenidas:", {
-      lessThanOneYearPercentage,
-      moreThanOneYearPercentage,
-    });
-
-    // Determinar límite basado en meses restantes
-    const espMonthsLeftText = calculateESPMonthsLeft();
-    const espMonthsLeft = typeof espMonthsLeftText === "number" ? espMonthsLeftText : null;
-
-    let lolLimit;
-
-    // Verificar meses restantes en ESP
-    if (espMonthsLeft > 12) {
-      lolLimit = moreThanOneYearPercentage; // Más de un año
-    } else if (espMonthsLeft !== null && espMonthsLeft >= 0) {
-      lolLimit = lessThanOneYearPercentage; // Menos de un año o expirado
-    } else {
-      // Si faltan datos de expiración (no definidos o inválidos)
-      console.warn("Fecha de expiración faltante o inválida.");
-      document.getElementById('repairResults').textContent = "Missing or invalid expiration date. Please check.";
-      return;
-    }
-
-    console.log("Límite dinámico aplicado (lolLimit):", lolLimit);
-
-    // Generar recomendación basada en el límite dinámico
-    let finalRecommendation = "";
-    let color = "";
-
-    if (repairPercentage > lolLimit) {
-      finalRecommendation = "REPLACEMENT RECOMMENDED";
-      color = "red";
-    } else {
-      finalRecommendation = "REPAIR RECOMMENDED";
-      color = "green";
-    }
-
-    // Mostrar recomendación en la pantalla
-    document.getElementById('repairResults').innerHTML = `
-      Repair Percentage: ${repairPercentage.toFixed(2)}%<br>
-      <span style="color: ${color}; font-weight: bold;">${finalRecommendation}</span>
-    `;
-    console.log("Recomendación final mostrada:", finalRecommendation);
-  } catch (error) {
-    console.error("Error durante el proceso de cálculo:", error);
-    document.getElementById('repairResults').textContent = "Error fetching configuration.";
+  if (lowerPercentage > 60) {
+    finalRecommendation = "REPLACEMENT RECOMMENDED";
+    color = "red";
+  } else {
+    finalRecommendation = "REPAIR RECOMMENDED";
+    color = "green";
   }
+
+  // Muestra resultados
+  document.getElementById('repairResults').innerHTML = `
+    SVC: ${Math.round(svcLOLPercentage)}% LOL<br>
+    CTR: ${Math.round(ctrLOLPercentage)}ctrPercentage.toFixed(2)}% LOL<br>
+    <span style="color: ${color}; font-weight: bold;">${finalRecommendation}</span>
+  `;
 }
 
 function formatExpirationDate() {
@@ -994,138 +939,104 @@ function calculateMonthsRemaining() {
 
   // Convertir MM/DD/YY a una fecha completa
   const [month, day, year] = dateInput.split('/').map(Number);
-  const fullYear = year >= 70 ? year + 1900 : year + 2000; // Asumir año en formato 1900+ para valores >=70 y 2000+ para menores
+  const fullYear = year + 2000; // Asumir año en formato 2000+
   const expDate = new Date(fullYear, month - 1, day); // Date usa meses de 0-11
 
   const currentDate = new Date();
 
   // Calcular diferencia en meses
   const diffTime = expDate - currentDate;
-  const diffMonths = Math.max(0, Math.round(diffTime / (1000 * 60 * 60 * 24 * 30))); // Convierte ms a meses redondeados
+  const diffMonths = Math.max(0, Math.floor(diffTime / (1000 * 60 * 60 * 24 * 30))); // Convierte ms a meses
 
   document.getElementById('remainingMonths').textContent = `${diffMonths} MONTHS REMAINING`;
 }
 
+// Función para calcular los meses restantes del ESP
 function calculateESPMonthsLeft() {
-  const dateInput = document.getElementById('expirationDate').value;
-
-  if (!dateInput) {
-    console.warn("Fecha de expiración no proporcionada.");
-    return null; // Indica que faltan datos
-  }
-
-  const expirationDate = new Date(dateInput); // Fecha de expiración del acuerdo
-  const currentDate = new Date();
-
-  // Validar que la fecha sea válida
-  if (isNaN(expirationDate.getTime())) {
-    console.warn("Fecha de expiración inválida.");
-    return null;
-  }
+  const expirationDate = new Date(document.getElementById('expirationDate').value); // Fecha de expiración del acuerdo
+  const currentDate = new Date(); // Fecha actual
 
   // Calcular la diferencia en meses entre la fecha actual y la de expiración
   const monthsLeft = (expirationDate.getFullYear() - currentDate.getFullYear()) * 12 +
                      (expirationDate.getMonth() - currentDate.getMonth());
 
-  // Devolver el número de meses restantes o indicar que ya expiró
-  return monthsLeft >= 0 ? monthsLeft : 0; // Si ya expiró, devuelve 0
+  // Manejo de casos para meses restantes
+  if (monthsLeft < 0) {
+    return "agreement already expired"; // Cuando el acuerdo ya expiró
+  } else if (monthsLeft === 0) {
+    return "0 months left"; // Cuando queda menos de un mes
+  } else {
+    return monthsLeft; // Devuelve la cantidad de meses restantes si es mayor a 0
+  }
 }
 
-async function calculateLOLPercentage() {
-  console.log("Iniciando cálculo de LOL basado en valores dinámicos...");
+function calculateLOLPercentage() {
+    // Obtener valores necesarios
+    const previousClaims = parseFloat(document.getElementById('previousClaims').value) || 0;
+    const applianceValue = parseFloat(document.getElementById('applianceValue').value) || 0; // LOL
 
-  const previousClaims = parseFloat(document.getElementById('previousClaims').value) || 0; // Labor
-  const applianceValue = parseFloat(document.getElementById('applianceValue').value) || 0; // LOL
+    // Calcular los meses restantes del ESP
+    const espMonthsLeftText = calculateESPMonthsLeft();
 
-  if (applianceValue <= 0) {
-    console.warn("LOL Value está vacío o es inválido. Deteniendo el cálculo.");
-    document.getElementById('lolResults').textContent = "Enter a valid LOL Value to calculate.";
-    return;
-  }
+    // Obtener totales de SVC y CTR
+    const svcTotal = parseFloat(document.getElementById('svcSubtotal').textContent.replace(/[^0-9.]/g, '')) || 0;
+    const ctrTotal = parseFloat(document.getElementById('ctrSubtotal').textContent.replace(/[^0-9.]/g, '')) || 0;
 
-  // Calcular los meses restantes del ESP
-  const espMonthsLeft = calculateESPMonthsLeft();
+    // Determinar el tipo de LOL (FV o FV-C)
+    const lolType = document.querySelector('input[name="lolType"]:checked')?.value || "FV";
 
-  if (espMonthsLeft === null) {
-    document.getElementById('lolResults').textContent = "Missing or invalid expiration date.";
-    return;
-  }
+    // Calcular Remaining LOL si FV-C está seleccionado
+    const remainingLOL = lolType === "FV-C" ? applianceValue - previousClaims : applianceValue;
 
-  console.log("Meses restantes en ESP:", espMonthsLeft);
+    // Calcular porcentajes de LOL para SVC y CTR usando **remainingLOL**
+    const svcLOLPercentage = remainingLOL > 0 ? ((previousClaims + svcTotal) / applianceValue) * 100 : 0;
+    const ctrLOLPercentage = remainingLOL > 0 ? ((previousClaims + ctrTotal) / applianceValue) * 100 : 0;
 
-  // Obtener totales de SVC y CTR
-  const svcTotal = parseFloat(document.getElementById('svcSubtotal').textContent.replace(/[^0-9.]/g, '')) || 0;
-  const ctrTotal = parseFloat(document.getElementById('ctrSubtotal').textContent.replace(/[^0-9.]/g, '')) || 0;
+    // Determinar los límites de riesgo según meses restantes en el ESP
+    const espMonthsLeft = typeof espMonthsLeftText === "number" ? espMonthsLeftText : -1;
+    const lolLimit = espMonthsLeft < 6 && espMonthsLeft >= 0 ? 70 : 60;
 
-  // Determinar el tipo de LOL (FV o FV-C)
-  const lolType = document.querySelector('input[name="lolType"]:checked')?.value || "FV";
-  const remainingLOL = lolType === "FV-C" ? applianceValue - previousClaims : applianceValue;
+    // Determinar el porcentaje de LOL más bajo entre SVC y CTR
+    const lowestLOLPercentage = Math.min(svcLOLPercentage, ctrLOLPercentage);
 
-  // Calcular porcentajes de LOL para SVC y CTR
-  const svcLOLPercentage = remainingLOL > 0 ? ((previousClaims + svcTotal) / applianceValue) * 100 : 0;
-  const ctrLOLPercentage = remainingLOL > 0 ? ((previousClaims + ctrTotal) / applianceValue) * 100 : 0;
+    // Obtener la fecha actual en formato MM-DD-YYYY
+    const currentDate = new Date();
+    const formattedDate = `${(currentDate.getMonth() + 1).toString().padStart(2, '0')}-${currentDate.getDate().toString().padStart(2, '0')}-${currentDate.getFullYear()}`;
 
-  try {
-    console.log("Consultando el backend para obtener configuraciones dinámicas...");
-    const response = await fetch("http://localhost:5000/config");
-    if (!response.ok) {
-      throw new Error(`Error en la respuesta del backend: ${response.statusText}`);
-    }
-
-    const data = await response.json();
-    const lessThanOneYearPercentage = parseFloat(data.lessThanOneYearPercentage);
-    const moreThanOneYearPercentage = parseFloat(data.moreThanOneYearPercentage);
-
-    if (isNaN(lessThanOneYearPercentage) || isNaN(moreThanOneYearPercentage)) {
-      console.error("Valores dinámicos obtenidos son inválidos:", {
-        lessThanOneYearPercentage,
-        moreThanOneYearPercentage,
-      });
-      document.getElementById('lolResults').textContent = "Error fetching dynamic percentages.";
-      return;
-    }
-
-    console.log("Configuraciones dinámicas obtenidas:", {
-      lessThanOneYearPercentage,
-      moreThanOneYearPercentage,
-    });
-
-    // Determinar límite basado en meses restantes
-    const lolLimit = espMonthsLeft > 12
-      ? moreThanOneYearPercentage
-      : lessThanOneYearPercentage; // Menos de un año o expirado
-
-    console.log("Límite dinámico aplicado (lolLimit):", lolLimit);
+    // Espacio para el correo del SVC
+    const svcEmail = document.getElementById('svcEmail')?.value || '____________';
 
     // Generar la recomendación final
     let finalRecommendation = "";
 
     if (svcLOLPercentage <= lolLimit && ctrLOLPercentage <= lolLimit) {
-      if (svcTotal <= ctrTotal + 35) {
-        finalRecommendation = `Approve SVC repairs for $${svcTotal.toFixed(2)}. Repairs will reach ${Math.round(svcLOLPercentage)}% LOL, ${espMonthsLeft === 0 ? "agreement already expired," : `with ${espMonthsLeft} months left,`} Repair is the best option.`;
-      } else {
-        finalRecommendation = `Approve CTR repairs for $${ctrTotal.toFixed(2)}. Repairs will reach ${Math.round(ctrLOLPercentage)}% LOL, ${espMonthsLeft === 0 ? "agreement already expired," : `with ${espMonthsLeft} months left,`} Repair is the best option.`;
-      }
+        if (svcTotal <= ctrTotal + 35) {
+            finalRecommendation = `Approve SVC repairs for $${svcTotal.toFixed(2)}. Repairs will reach ${Math.round(svcLOLPercentage)}% LOL, ${espMonthsLeftText === "agreement already expired," ? "with agreement already expired," : `with ${espMonthsLeftText} months left,`} Repair is the best option.`;
+        } else {
+            finalRecommendation = `Approve CTR repairs for $${ctrTotal.toFixed(2)}. Repairs will reach ${Math.round(ctrLOLPercentage)}% LOL, ${espMonthsLeftText === "agreement already expired," ? "with agreement already expired," : `with ${espMonthsLeftText} months left,`} Repair is the best option.`;
+        }
     } else if (svcLOLPercentage <= lolLimit) {
-      finalRecommendation = `Approve SVC repairs for $${svcTotal.toFixed(2)}. Repairs will reach ${Math.round(svcLOLPercentage)}% LOL, ${espMonthsLeft === 0 ? "agreement already expired," : `with ${espMonthsLeft} months left,`} Repair is the best option.`;
+        finalRecommendation = `Approve SVC repairs for $${svcTotal.toFixed(2)}. Repairs will reach ${Math.round(svcLOLPercentage)}% LOL, ${espMonthsLeftText === "agreement already expired," ? "with agreement already expired," : `with ${espMonthsLeftText} months left,`} Repair is the best option.`;
     } else if (ctrLOLPercentage <= lolLimit) {
-      finalRecommendation = `Approve CTR repairs for $${ctrTotal.toFixed(2)}. Repairs will reach ${Math.round(ctrLOLPercentage)}% LOL, ${espMonthsLeft === 0 ? "agreement already expired," : `with ${espMonthsLeft} months left,`} Repair is the best option.`;
+        finalRecommendation = `Approve CTR repairs for $${ctrTotal.toFixed(2)}. Repairs will reach ${Math.round(ctrLOLPercentage)}% LOL, ${espMonthsLeftText === "agreement already expired," ? "with agreement already expired," : `with ${espMonthsLeftText} months left,`} Repair is the best option.`;
     } else {
-      finalRecommendation = `
-Repairs will reach ${Math.round(Math.min(svcLOLPercentage, ctrLOLPercentage))}% LOL, ${espMonthsLeft === 0 ? "agreement already expired," : `with ${espMonthsLeft} months left,`} Best option is to evaluate alternate resolution, request comparable replacement quote to DLR.
-(Internal Claims notes only: Email sent to: ${document.getElementById('svcEmail')?.value || '____________'} on ${new Date().toLocaleDateString('en-US')})
+        finalRecommendation = `
+Repairs will reach ${Math.round(lowestLOLPercentage)}% LOL, ${espMonthsLeftText === "agreement already expired," ? "with agreement already expired," : `with ${espMonthsLeftText} months left,`} Best option is to evaluate alternate resolution, request comparable replacement quote to DLR.
+(Internal Claims notes only: Email sent to: ${svcEmail} on ${formattedDate})
 ***REPLACEMENT IS NOT GUARANTEED***
 `.trim();
     }
 
-    // Mostrar la recomendación en el Textarea Editable
-    document.getElementById('finalRecommendation').value = finalRecommendation;
+  // Mostrar la recomendación en el Textarea de Final Recommendation
+  document.getElementById('finalRecommendation').value = finalRecommendation;
 
-    console.log("Recomendación final mostrada:", finalRecommendation);
-  } catch (error) {
-    console.error("Error durante el proceso de cálculo:", error);
-    document.getElementById('lolResults').textContent = "Error fetching configuration.";
-  }
+  // Mostrar resultados en pantalla
+  document.getElementById('lolResults').innerHTML = `
+    <strong>LOL Percentages:</strong><br>
+    - SVC LOL: <span style="${svcLOLPercentage > lolLimit ? 'color: red;' : 'color: green;'}">${Math.round(svcLOLPercentage)}%</span><br>
+    - CTR LOL: <span style="${ctrLOLPercentage > lolLimit ? 'color: red;' : 'color: green;'}">${Math.round(ctrLOLPercentage)}%</span><br>
+    ${lolType === "FV-C" ? `- REMAINING LOL: <Span>$${remainingLOL.toFixed(2)}</span><br>` : ""}
+  `;
 }
 
 function sendCompQuoteEmail() {
@@ -1452,30 +1363,20 @@ function openLogInBrowser() {
     logWindow.document.close();
 }
 
-// Desactivar flechas para inputs al cargar la página
+//Desactivar flechas para inputs de Cost
 document.addEventListener("DOMContentLoaded", () => {
-  // Desactivar flechas para todos los inputs actuales con placeholder="Cost"
+  // Desactivar flechas para todos los inputs actuales en Cost
   document.querySelectorAll("input[placeholder='Cost']").forEach(disableArrowKeys);
-
-  // Desactivar flechas para campos específicos: Labor Cost, Mileage Cost y R&R
-  ["laborCost", "mileageCost", "rrCost"].forEach((id) => {
-    const input = document.getElementById(id);
-    if (input) {
-      disableArrowKeys(input);
-    }
-  });
 
   // Desactivar flechas para nuevos inputs dinámicos al agregar filas
   const addButtons = ["svc", "ctr"];
   addButtons.forEach((tableId) => {
-    document
-      .querySelector(`button[onclick="addRow('${tableId}')"]`)
-      .addEventListener("click", () => {
-        setTimeout(() => {
-          const newCostInputs = document.querySelectorAll(`#${tableId}Table tbody input[placeholder='Cost']`);
-          newCostInputs.forEach(disableArrowKeys); // Aplicar lógica a nuevos inputs
-        }, 50); // Breve retraso para asegurar que la fila ya se haya agregado
-      });
+    document.querySelector(`button[onclick="addRow('${tableId}')"]`).addEventListener("click", () => {
+      setTimeout(() => {
+        const newCostInputs = document.querySelectorAll(`#${tableId}Table tbody input[placeholder='Cost']`);
+        newCostInputs.forEach(disableArrowKeys); // Aplicar lógica a nuevos inputs
+      }, 50); // Breve retraso para asegurar que la fila ya se haya agregado
+    });
   });
 });
 

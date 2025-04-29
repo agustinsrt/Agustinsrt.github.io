@@ -1,70 +1,96 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Panel</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
-    }
-    label {
-      display: block;
-      margin-bottom: 10px;
-    }
-    input[type="number"] {
-      margin-bottom: 15px;
-      padding: 5px;
-      font-size: 1em;
-    }
-    button {
-      margin-top: 10px;
-      padding: 10px 20px;
-      background-color: #0078D7;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #005a9e;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Repair Recommendation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        #adminPanel, #agentPanel {
+            display: none;
+        }
+        button {
+            margin: 10px;
+            padding: 10px 20px;
+            background-color: #0078D7;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #005a9e;
+        }
+    </style>
 </head>
 <body>
-  <h1>Admin Panel</h1>
-  <form id="configForm">
-    <label for="lessThanOneYearPercentage">Less Than One Year Percentage:</label>
-    <input type="number" id="lessThanOneYearPercentage" value="70" min="0" max="100" step="1" required>
-    
-    <label for="moreThanOneYearPercentage">More Than One Year Percentage:</label>
-    <input type="number" id="moreThanOneYearPercentage" value="60" min="0" max="100" step="1" required>
+    <h1>Login</h1>
+    <form id="loginForm">
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" required><br>
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required><br>
+        <button type="submit">Login</button>
+    </form>
 
-    <button type="button" id="saveConfig">Save Configuration</button>
-  </form>
+    <div id="adminPanel">
+        <h2>Admin Panel</h2>
+        <p>Modificar configuración de porcentaje para recomendaciones:</p>
+        <label for="lowerPercentage">Lower Percentage:</label>
+        <input type="number" id="lowerPercentage" value="60"><br>
+        <button id="saveConfig">Guardar Configuración</button>
+    </div>
 
-  <script>
-    // Obtener y guardar configuraciones en el backend
-    document.getElementById("saveConfig").addEventListener("click", function () {
-      const lessThanOneYearPercentage = document.getElementById("lessThanOneYearPercentage").value;
-      const moreThanOneYearPercentage = document.getElementById("moreThanOneYearPercentage").value;
+    <div id="agentPanel">
+        <h2>Agent Panel</h2>
+        <p>Interfaz para cargar datos y calcular recomendaciones.</p>
+        <button id="calculateRecommendation">Calcular Recomendación</button>
+        <div id="repairResults"></div>
+    </div>
 
-      fetch("http://localhost:5000/config", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          lessThanOneYearPercentage: lessThanOneYearPercentage,
-          moreThanOneYearPercentage: moreThanOneYearPercentage
-        })
-      })
-      .then(response => response.json())
-      .then(data => {
-        alert("Configuration saved successfully!");
-        console.log("Server Response:", data);
-      })
-      .catch(error => console.error("Error saving configuration:", error));
-    });
-  </script>
+    <script>
+        let lowerPercentage = 60; // Valor inicial
+
+        document.getElementById("loginForm").addEventListener("submit", function(event) {
+            event.preventDefault();
+            const username = document.getElementById("username").value;
+            const password = document.getElementById("password").value;
+
+            if (username === "admin" && password === "admin123") {
+                document.getElementById("adminPanel").style.display = "block";
+                document.getElementById("agentPanel").style.display = "none";
+            } else if (username === "agent" && password === "agent123") {
+                document.getElementById("agentPanel").style.display = "block";
+                document.getElementById("adminPanel").style.display = "none";
+            } else {
+                alert("Credenciales incorrectas.");
+            }
+        });
+
+        document.getElementById("saveConfig").addEventListener("click", function() {
+            const newLowerPercentage = parseFloat(document.getElementById("lowerPercentage").value);
+            if (!isNaN(newLowerPercentage)) {
+                lowerPercentage = newLowerPercentage;
+                alert("Configuración guardada. Nuevo porcentaje: " + lowerPercentage + "%");
+            } else {
+                alert("Por favor, ingresa un valor válido.");
+            }
+        });
+
+        document.getElementById("calculateRecommendation").addEventListener("click", function() {
+            // Simular cálculo con lowerPercentage
+            const exampleValue = Math.random() * 100; // Valor simulado
+            const finalRecommendation = exampleValue > lowerPercentage ? "REPLACEMENT RECOMMENDED" : "REPAIR RECOMMENDED";
+            const color = exampleValue > lowerPercentage ? "red" : "green";
+
+            document.getElementById("repairResults").innerHTML = `
+                <p>Valor calculado: ${exampleValue.toFixed(2)}%</p>
+                <p style="color: ${color}; font-weight: bold;">${finalRecommendation}</p>
+            `;
+        });
+    </script>
 </body>
 </html>
